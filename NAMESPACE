@@ -1,0 +1,8 @@
+export("get_pseudo")
+export("rGMCM")
+export("GMM_kmeans")
+import(abind)
+import(magrittr)
+import(methods)
+importFrom(purrr, map)
+import(stats)
