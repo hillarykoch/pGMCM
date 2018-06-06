@@ -10,3 +10,8 @@ get_pals(pal)
 }
 \value{Hex codes of a color palette.}
 \author{\email{hbk5086@psu.edu}}
+\examples{
+pal <- get_pals(4)
+n <- length(pal)
+plot(seq(n), runif(n), col = pal, cex = 15)
+}

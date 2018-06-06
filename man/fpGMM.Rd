@@ -11,7 +11,7 @@ fpGMM(x, lambda = NULL, kmax)
 }
 \arguments{
   \item{x}{An n by d numeric matrix of n observations with dimension d.}
-  \item{lambda}{Penalty parameter.}
+  \item{lambda}{Penalty parameter. If unspecified, a grid is automatically generated.}
   \item{kmax}{Maximum number of clusters to consider, and the number of clusters the algorithm is initialized with.}
 }
 \details{The model is fit using the expectation-maximization algorithm. Clusters are initialized using kmeans with kmax clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}

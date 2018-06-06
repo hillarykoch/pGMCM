@@ -65,7 +65,7 @@ fpGMM <- function(x, lambda=NULL, kmax){
         tag <- as.vector(curGMM$cluster+1) # cluster indexing starts at 0 in C++
 
         prob <- outer(rep(1,n), prop0, "*")*pdf_est %>% colSums
-        BIC  <- k*df*log(n) - sum(log(prob)) # calculate BIC score
+        BIC  <- (k*df-1)*log(n) - sum(log(prob)) # calculate BIC score.
 
         # update parameters
         if (abs(bestBIC) > abs(BIC)){
