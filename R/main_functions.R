@@ -1,4 +1,3 @@
-
 # generate data for general GMCM
 rGMCM <- function(n, prop, mu, sigma){
     # n: sample size
