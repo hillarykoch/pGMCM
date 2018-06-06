@@ -26,7 +26,7 @@ arma::vec Mahalanobis(arma::mat x, arma::rowvec mu, arma::mat sigma){
     for (int i=0; i < n; i++) {
         x_cen.row(i) = x.row(i) - mu;
     }
-    return sum((x_cen*inv_sympd(sigma)) % x_cen, 1);
+    return sum((x_cen*sigma.i()) % x_cen, 1);
 }
 
 // Compute density of multivariate normal
@@ -99,7 +99,7 @@ Rcpp::List cfpGMM(arma::mat& x,
                 prop_new(i) = 0;
         }
         prop_new = prop_new/(sum(prop_new)*1.0L);
-        
+
         // calculate difference between two iterations
         delta = sum(abs(prop_new - prop_old));
 

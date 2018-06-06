@@ -53,28 +53,25 @@ fpGMM <- function(x, lambda=NULL, kmax){
     bestBIC <- -10^6
 
     for(i in seq_along(lambda)){
-        curGMM <- cfpGMM(x=x, prop=prop0, mu = mu0, sigma = sigma0, k = kmax, df = df, citermax = 300, lambda = lambda[i]) # estimate penalized GMM for a given lambda
+        # estimate penalized GMM for a given lambda
+        curGMM <- cfpGMM(x=x, prop=prop0, mu = mu0, sigma = sigma0, k = kmax, df = df, citermax = 300, lambda = lambda[i])
 
         # parameter estimation output
-        k <- curGMM$k
-        prop <- prop0 <- as.vector(curGMM$prop)
-        ym <- curGMM$mu
-        yv <- curGMM$sigma
-        pdf_est <- curGMM$pdf_est
+        k_temp <- curGMM$k
+        pdf_est_temp <- curGMM$pdf_est
+        prop_temp <- as.vector(curGMM$prop)
 
-        tag <- as.vector(curGMM$cluster+1) # cluster indexing starts at 0 in C++
-
-        prob <- outer(rep(1,n), prop0, "*")*pdf_est %>% colSums
-        BIC  <- (k*df-1)*log(n) - sum(log(prob)) # calculate BIC score.
+        prob <- outer(rep(1,n), prop_temp, "*")*pdf_est_temp %>% colSums
+        BIC  <- (k_temp*df-1)*log(n) - sum(log(prob)) # calculate BIC score.
 
         # update parameters
         if (abs(bestBIC) > abs(BIC)){
-            k <- curGMM$k
-            prop <- curGMM$prop
+            k <- k_temp
+            prop <- prop_temp
             mu <- curGMM$mu
             sigma <- curGMM$sigma
             bestBIC <- BIC
-            cl <- tag
+            cl <- as.vector(curGMM$cluster+1) # cluster indexing starts at 0 in C++
             bestlam <- lambda[i]
         }
     }
