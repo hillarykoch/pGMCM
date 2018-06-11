@@ -7,7 +7,7 @@ Fit penalized Gaussian mixture model.
 For a given maximum number of clusters in the data, find the optimal penalization parameter lambda and the optimal clustering. Lambda penalized the mixing proportions. Model optimality is determined by best BIC.
 }
 \usage{
-fpGMM(x, lambda = NULL, kmax)
+fpGMM(x, kmax, lambda = NULL)
 }
 \arguments{
   \item{x}{An n by d numeric matrix of n observations with dimension d.}

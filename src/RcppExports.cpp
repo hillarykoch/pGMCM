@@ -64,80 +64,12 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_fpGMM
-arma::mat C_fpGMM(List sigma);
-RcppExport SEXP _pGMCM_C_fpGMM(SEXP sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type sigma(sigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_fpGMM(sigma));
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_oneL
-arma::vec C_oneL(arma::vec prob0);
-RcppExport SEXP _pGMCM_C_oneL(SEXP prob0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type prob0(prob0SEXP);
-    rcpp_result_gen = Rcpp::wrap(C_oneL(prob0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_slice
-List C_slice(int n, int d, int k, arma::mat x, arma::mat mu_new, arma::mat h_est, List sigma_old);
-RcppExport SEXP _pGMCM_C_slice(SEXP nSEXP, SEXP dSEXP, SEXP kSEXP, SEXP xSEXP, SEXP mu_newSEXP, SEXP h_estSEXP, SEXP sigma_oldSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type mu_new(mu_newSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type h_est(h_estSEXP);
-    Rcpp::traits::input_parameter< List >::type sigma_old(sigma_oldSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_slice(n, d, k, x, mu_new, h_est, sigma_old));
-    return rcpp_result_gen;
-END_RCPP
-}
-// choose_list
-List choose_list(List sigma, arma::uvec& idx);
-RcppExport SEXP _pGMCM_choose_list(SEXP sigmaSEXP, SEXP idxSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< arma::uvec& >::type idx(idxSEXP);
-    rcpp_result_gen = Rcpp::wrap(choose_list(sigma, idx));
-    return rcpp_result_gen;
-END_RCPP
-}
-// getuvec
-List getuvec(arma::vec input, List sigma);
-RcppExport SEXP _pGMCM_getuvec(SEXP inputSEXP, SEXP sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< List >::type sigma(sigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(getuvec(input, sigma));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_choose_slice", (DL_FUNC) &_pGMCM_choose_slice, 4},
     {"_pGMCM_Mahalanobis", (DL_FUNC) &_pGMCM_Mahalanobis, 3},
     {"_pGMCM_cdmvnorm", (DL_FUNC) &_pGMCM_cdmvnorm, 3},
     {"_pGMCM_cfpGMM", (DL_FUNC) &_pGMCM_cfpGMM, 8},
-    {"_pGMCM_C_fpGMM", (DL_FUNC) &_pGMCM_C_fpGMM, 1},
-    {"_pGMCM_C_oneL", (DL_FUNC) &_pGMCM_C_oneL, 1},
-    {"_pGMCM_C_slice", (DL_FUNC) &_pGMCM_C_slice, 7},
-    {"_pGMCM_choose_list", (DL_FUNC) &_pGMCM_choose_list, 2},
-    {"_pGMCM_getuvec", (DL_FUNC) &_pGMCM_getuvec, 2},
     {NULL, NULL, 0}
 };
 

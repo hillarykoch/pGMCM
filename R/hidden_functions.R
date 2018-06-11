@@ -7,8 +7,8 @@ get_pseudo <- function(u, mu, sigma, prop, m) {
 
     # Compute cdf of gaussian mixture marginally for given replicate
     m <- length(prop)
-    N <- 1000 # precision of grid for linear interpolation
-    grid <- seq(min(-3, -mu-3*sigma), max(3, mu+3*sigma), length.out = N)
+    N <- 1500 # precision of grid for linear interpolation
+    grid <- seq(min(-4, -mu-4*sigma), max(3, mu+4*sigma), length.out = N)
     G <- Reduce('+', lapply(seq(m), function(X) prop[X]*pnorm(grid, mu[X], sigma[X])))
 
     # Do linear interpolation

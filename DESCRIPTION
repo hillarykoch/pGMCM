@@ -3,7 +3,7 @@ Type: Package
 Title: Analysis with Penalized Gaussian Copula Mixture Models
 Version: 0.1.0
 Author: Hillary Koch
-Maintainer: The package maintainer <hillary.koch01@gmail.com>
+Maintainer: <hillary.koch01@gmail.com>
 Description: Simulation, model fitting, and classification with Gaussian copula mixture models.
 License: Artistic-2.0
 Encoding: UTF-8
@@ -11,9 +11,12 @@ LazyData: true
 Imports:
     abind,
     magrittr,
+    mvtnorm,
     purrr,
     Rcpp (>= 0.12.16),
     stats
 Suggests:
     mvtnorm
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo:
+    Rcpp,
+    RcppArmadillo

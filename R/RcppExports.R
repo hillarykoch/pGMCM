@@ -17,23 +17,3 @@ cfpGMM <- function(x, prop, mu, sigma, k, df, citermax, lambda) {
     .Call(`_pGMCM_cfpGMM`, x, prop, mu, sigma, k, df, citermax, lambda)
 }
 
-C_fpGMM <- function(sigma) {
-    .Call(`_pGMCM_C_fpGMM`, sigma)
-}
-
-C_oneL <- function(prob0) {
-    .Call(`_pGMCM_C_oneL`, prob0)
-}
-
-C_slice <- function(n, d, k, x, mu_new, h_est, sigma_old) {
-    .Call(`_pGMCM_C_slice`, n, d, k, x, mu_new, h_est, sigma_old)
-}
-
-choose_list <- function(sigma, idx) {
-    .Call(`_pGMCM_choose_list`, sigma, idx)
-}
-
-getuvec <- function(input, sigma) {
-    .Call(`_pGMCM_getuvec`, input, sigma)
-}
-
