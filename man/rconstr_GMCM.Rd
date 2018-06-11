@@ -1,0 +1,35 @@
+\name{rconstr_GMCM}
+\alias{rconstr_GMCM}
+\title{Simulate data from a Gaussian mixture copula model with constraints on behavior across replicates}
+\description{
+This function will simulate data from a GMCM with n data points divided up between the number of clusters determined by the number of entries in prop. Observations from a single replicate are assumed to have mean mu and variance sigma. The data have dimension d (number of replicates), and number of components h (number of possible classifications, for a given replicate). Two replicates from the same component have correlation rho. If two replicates are from different components, their correlation is 0.
+}
+\usage{
+rconstr_GMCM(n, prop, mu, sigma, rho, h, d)
+}
+\arguments{
+    \item{n}{The number of observations.}
+    \item{prop}{The proportion of data that belong to each cluster. The length of prop must equal the correct number of clusters. If prop doesn't sum to 1, it is normalized to do so.}
+    \item{mu}{A numeric vector of means, each element corresponding to the corresponding component.}
+    \item{sigma}{A numeric vector of variances, each element corresponding to the corresponding component.}
+    \item{rho}{A numeric vector of correlations, each element corresponding to the corresponding component.}
+    \item{h}{Number of components.}
+    \item{d}{Number of replicates.}
+}
+\value{
+    \item{data}{An n by d numeric matrix of simulated multivariate normal data, where d is the dimension of the data.}
+    \item{u}{An n by d numeric matrix corresponding to the data transformed using the empirical cdf of the observations.}
+    \item{z}{An n by d numeric matrix corresponding to the latent process.}
+    \item{cluster}{Integer vector of the true cluster labels.}
+}
+\author{\email{hbk5086@psu.edu}}
+\seealso{\link{rGMCM}}
+\examples{
+pal <- get_pals(2)
+
+sim <- rconstr_GMCM(1000, rep(0.25, 4), c(0,2), c(2,3), c(0,.7), 2, 2)
+
+par(mfrow = c(1,2))
+plot(sim$data, col = pal[sim$cluster], main = "observed")
+plot(sim$u, col = pal[sim$cluster], main = "copula")
+}

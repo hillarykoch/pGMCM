@@ -9,7 +9,7 @@ This function will simulate data from a GMCM with n data points divided up betwe
 }
 \arguments{
     \item{n}{The number of observations.}
-    \item{prop}{The proportion of data that belong to each component. The length of prop specifies the number of components. If prop doesn't sum to 1, it is normalized to do so.}
+    \item{prop}{The proportion of data that belong to each cluster. The length of prop specifies the number of clusters. If prop doesn't sum to 1, it is normalized to do so.}
     \item{mu}{A list of mean vectors. Each element of the list should have the same length, where the length corresponse to the dimension of the data.}
     \item{sigma}{A list of variance covariance matrices. Each element of the list should be a square matrix of the same dimension, where the dimension of the matrix should match the length of the elements in mu.}
 }
@@ -17,8 +17,9 @@ This function will simulate data from a GMCM with n data points divided up betwe
     \item{data}{An n by d numeric matrix of simulated multivariate normal data, where d is the dimension of the data.}
     \item{u}{An n by d numeric matrix corresponding to the data transformed using the empirical cdf of the observations.}
     \item{z}{An n by d numeric matrix corresponding to the latent process.}
-    \item{component}{Integer vector of the true component labels.}
+    \item{cluster}{Integer vector of the true cluster labels.}
 }
+\seealso{\link{rconstr_GMCM}}
 \author{\email{hbk5086@psu.edu}}
 \examples{
 sim <- rGMCM(1500, prop = c(1/3,1/3,1/3),

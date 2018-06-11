@@ -22,7 +22,7 @@ GMM_kmeans <- function(x, k, iter.max = 30){
 
 
 # choose the corresponding lambda of max BIC in penalized GMM and get best estimates
-fpGMM <- function(x, kmax, lambda=NULL){
+fpGMM <- function(x, kmax, lambda=NULL, tol = 1e-06, itermax = 300){
     # x: a matrix of data with rows for observations and columns for features
     # kmax: max number of clusters
     # lambda: a parameter of penalty term
@@ -61,7 +61,8 @@ fpGMM <- function(x, kmax, lambda=NULL){
         # estimate penalized GMM for a given lambda
         curGMM <- cfpGMM(x=x, prop=prop0, mu = mu0,
                          sigma = sigma0, k = kmax, df = df,
-                         citermax = 300, lambda = lambda[i])
+                         lambda = lambda[i],
+                         citermax = itermax, tol = tol)
 
         # parameter estimation output
         k_temp <- curGMM$k
@@ -79,7 +80,7 @@ fpGMM <- function(x, kmax, lambda=NULL){
             bestBIC <- BIC
             cl <- as.vector(curGMM$cluster)
             bestlam <- lambda[i]
-            ll <- sum(curGMM$ll)
+            ll <- curGMM$ll
         }
     }
 

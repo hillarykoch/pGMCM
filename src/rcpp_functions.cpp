@@ -48,13 +48,14 @@ Rcpp::List cfpGMM(arma::mat& x,
                 arma::cube& sigma,
                 int k,
                 double df,
+                double lambda
                 int citermax,
-                double lambda) {
+                double tol
+                ) {
 
     const int n = x.n_rows;
     const int d = x.n_cols;
     double delta = 1;
-    double tol = 1E-06;
     arma::rowvec prop_old = prop;
     arma::mat mu_old = mu;
     arma::cube sigma_old = sigma;
@@ -139,7 +140,7 @@ Rcpp::List cfpGMM(arma::mat& x,
                               Rcpp::Named("mu") = mu_old,
                               Rcpp::Named("sigma") = sigma_old,
                               Rcpp::Named("pdf_est") = pdf_est,
-                              Rcpp::Named("ll") = sum(prob0),
+                              Rcpp::Named("ll") = sum(log(sum(prob0,1))),
                               Rcpp::Named("cluster") = tag+1);
 }
 
