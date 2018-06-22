@@ -12,11 +12,15 @@ Imports:
     abind,
     magrittr,
     mvtnorm,
+    plyr,
     purrr,
     Rcpp (>= 0.12.16),
+    RcppNumerical,
     stats
 Suggests:
     mvtnorm
 LinkingTo:
     Rcpp,
-    RcppArmadillo
+    RcppArmadillo,
+    RcppEigen,
+    RcppNumerical

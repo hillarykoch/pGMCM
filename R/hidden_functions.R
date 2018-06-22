@@ -17,12 +17,13 @@ get_pseudo <- function(u, mu, sigma, prop, k) {
 }
 
 # Calculate variance covariance matrix for constrained GMCM
-get_constr_sigma <- function(sigma, idx){
-    Sigma <- diag(sigma[idx])
+get_constr_sigma <- function(Sigma, rho, idx){
     for(i in 1:(nrow(Sigma)-1)){
         for(j in (i+1):ncol(Sigma)){
-            if(Sigma[i,i] == Sigma[j,j]){
-                Sigma[i,j] <- Sigma[j,i] <- rho[idx[i]]
+            if(idx[i] == idx[j]){
+                Sigma[i,j] <- Sigma[j,i] <- rho
+            } else if(idx[i] == -idx[j]){
+                Sigma[i,j] <- Sigma[j,i] <- -rho
             }
         }
     }
