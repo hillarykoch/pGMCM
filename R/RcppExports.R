@@ -13,7 +13,35 @@ cdmvnorm <- function(x, mu, sigma) {
     .Call(`_pGMCM_cdmvnorm`, x, mu, sigma)
 }
 
-cfpGMM <- function(x, prop, mu, sigma, k, df, citermax, lambda) {
-    .Call(`_pGMCM_cfpGMM`, x, prop, mu, sigma, k, df, citermax, lambda)
+cfpGMM <- function(x, prop, mu, sigma, k, df, lambda, citermax, tol) {
+    .Call(`_pGMCM_cfpGMM`, x, prop, mu, sigma, k, df, lambda, citermax, tol)
+}
+
+cget_constr_sigma <- function(sigma, rho, combos, d) {
+    .Call(`_pGMCM_cget_constr_sigma`, sigma, rho, combos, d)
+}
+
+trans_rho <- function(rho) {
+    .Call(`_pGMCM_trans_rho`, rho)
+}
+
+trans_rho_inv <- function(rho) {
+    .Call(`_pGMCM_trans_rho_inv`, rho)
+}
+
+func_to_optim <- function(init_val, x, h_est, combos) {
+    .Call(`_pGMCM_func_to_optim`, init_val, x, h_est, combos)
+}
+
+optim_rcpp <- function(init_val, x, h_est, combos) {
+    .Call(`_pGMCM_optim_rcpp`, init_val, x, h_est, combos)
+}
+
+teststuff <- function(combos) {
+    .Call(`_pGMCM_teststuff`, combos)
+}
+
+cfconstr_pGMM <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol) {
+    .Call(`_pGMCM_cfconstr_pGMM`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol)
 }
 
