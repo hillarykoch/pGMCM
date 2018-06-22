@@ -10,10 +10,9 @@ rconstr_GMCM(n, prop, mu, sigma, rho, h, d)
 \arguments{
     \item{n}{The number of observations.}
     \item{prop}{The proportion of data that belong to each cluster. The length of prop must equal the correct number of clusters. If prop doesn't sum to 1, it is normalized to do so.}
-    \item{mu}{A numeric vector of means, each element corresponding to the corresponding component.}
-    \item{sigma}{A numeric vector of variances, each element corresponding to the corresponding component.}
-    \item{rho}{A numeric vector of correlations, each element corresponding to the corresponding component.}
-    \item{h}{Number of components.}
+    \item{mu}{Numeric corresponding to the mean of the positive association component.}
+    \item{sigma}{Numeric corresponding to the variance of the positive association component.}
+    \item{rho}{Numeric corresponding to the correlation between two positive association components.}
     \item{d}{Number of replicates.}
 }
 \value{
@@ -27,7 +26,7 @@ rconstr_GMCM(n, prop, mu, sigma, rho, h, d)
 \examples{
 pal <- get_pals(2)
 
-sim <- rconstr_GMCM(1000, rep(0.25, 4), c(0,2), c(2,3), c(0,.7), 2, 2)
+sim <- rconstr_GMCM(1000, rep(0.25, 9), 2, 1.1, .85, 2)
 
 par(mfrow = c(1,2))
 plot(sim$data, col = pal[sim$cluster], main = "observed")

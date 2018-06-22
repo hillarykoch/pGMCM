@@ -22,7 +22,7 @@ GMM_kmeans <- function(x, k, iter.max = 30){
 
 
 # choose the corresponding lambda of max BIC in penalized GMM and get best estimates
-fpGMM <- function(x, kmax, lambda=NULL, tol = 1e-06, itermax = 300){
+fpGMM <- function(x, kmax, lambda=NULL, tol = 1e-06, itermax = 200){
     # x: a matrix of data with rows for observations and columns for features
     # kmax: max number of clusters
     # lambda: a parameter of penalty term
