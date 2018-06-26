@@ -1,7 +1,7 @@
 # Color palettes
 
 get_pals <- function(pal){
-    if(!(pal %in% 1:4)){
+    if(!(pal %in% 1:9)){
         stop("No palette matching supplied argument.")
     }
     switch(pal,
