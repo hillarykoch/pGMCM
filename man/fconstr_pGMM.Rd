@@ -15,14 +15,15 @@ fconstr_pGMM(x, kmax, lambda = NULL, tol=1e-06, itermax = 300)
   \item{lambda}{Penalty parameter. If unspecified, a grid is automatically generated.}
   \item{tol}{Tolerance for the stopping rule for the EM algorithm. A lower tolerance will require more iterations. Defaults to 1e-06.}
   \item{itermax}{Maximum number of iterations of the EM algorithm to perform. Defaults to 300.}
-  
+
 }
 \details{The model is fit using the expectation-maximization algorithm. Clusters are initialized using kmeans with kmax clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}
 \value{
 \item{k}{Optimal number of clusters.}
 \item{prop}{Mixing proportions in each cluster.}
 \item{mu}{Cluster means.}
-\item{sigma}{Cluster variance (covariance) matrices}
+\item{sigma}{Cluster variances.}
+\item{rho}{Correlation between replicates with association.}
 \item{df}{Degrees of freedom for each cluster.}
 \item{cluster}{Cluster labels for each of the n observations.}
 \item{BIC}{BIC of optimal fit.}

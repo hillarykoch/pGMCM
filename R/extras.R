@@ -99,12 +99,12 @@ fconstr_pGMM <- function(x, kmax=NULL, lambda=NULL, tol = 1e-06, itermax = 200){
     # h: number of components (currently, make only 3)
 
     if(is.null(lambda)){
-        # Why was this hard coded like this?
         lambda <- sqrt(log(nrow(x))) * 10 ^ seq(-1 , 0.5, length.out = 20) # set the range of lambda
     }
 
     n <- nrow(x)
     d <- ncol(x)
+
     # Assuming there are 3 components {-1,0,1}, then max clusters should be 3^d
     # where d is the number of replicates
     kmax <- 3^d
@@ -179,6 +179,7 @@ fconstr_pGMM <- function(x, kmax=NULL, lambda=NULL, tol = 1e-06, itermax = 200){
             prop <- prop_temp
             mu <- curGMM$mu
             sigma <- curGMM$sigma
+            rho <- curGMM$rho
             bestBIC <- BIC
             cl <- as.vector(curGMM$cluster)
             bestlam <- lambda[i]
@@ -186,7 +187,7 @@ fconstr_pGMM <- function(x, kmax=NULL, lambda=NULL, tol = 1e-06, itermax = 200){
         }
     }
 
-    list("k" = k, "prop" = prop, "mu" = mu, "sigma" = sigma, "df" = df_temp,
+    list("k" = k, "prop" = prop, "mu" = mu, "sigma" = sigma, "rho" = rho, "df" = df_temp,
          "cluster" = cl, "BIC" = bestBIC, "lambda" = bestlam, "ll" = ll)
 }
 

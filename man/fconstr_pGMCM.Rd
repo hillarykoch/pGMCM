@@ -24,6 +24,7 @@ fconstr_pGMCM(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200)
 \item{prop}{Mixing proportions in each cluster.}
 \item{mu}{Cluster means.}
 \item{sigma}{Cluster variance (covariance) matrices}
+\item{rho}{Correlation between replicates with association.}
 \item{cluster}{Cluster labels for each of the n observations.}
 \item{lambda}{Lambda of optimal fit.}
 \item{ll}{Log likelihood of the data given the optimal fit.}
@@ -36,8 +37,8 @@ pal <- sample(get_pals(4), 9, replace = FALSE)
 sim <- rconstr_GMCM(2700, prop = rep(1/9,9),
                     mu = 4, sigma = 0.7, rho = 0.6, d = 2)
 fit <- fconstr_pGMCM(sim$data, kmax = 9,
-                     tol = 1e-04, stepmax = 50, itermax = 150)   
-                     
+                     tol = 1e-04, stepmax = 50, itermax = 150)
+
 par(mfrow = c(1,2))
 plot(sim$data, col = pal[sim$cluster], pch = 16, cex = 0.75,
     xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
