@@ -1,5 +1,6 @@
 useDynLib(pGMCM, .registration=TRUE)
 importFrom(abind, abind)
+importFrom(dplyr, mutate)
 import(magrittr)
 import(methods)
 importFrom(plyr, alply)

@@ -20,9 +20,9 @@ get_pseudo <- function(u, mu, sigma, prop, k) {
 get_constr_sigma <- function(Sigma, rho, idx){
     for(i in 1:(nrow(Sigma)-1)){
         for(j in (i+1):ncol(Sigma)){
-            if(idx[i] == idx[j]){
+            if(idx[i] == idx[j] & idx[i] != 0){
                 Sigma[i,j] <- Sigma[j,i] <- rho
-            } else if(idx[i] == -idx[j]){
+            } else if(idx[i] == -idx[j] & idx[i] != 0){
                 Sigma[i,j] <- Sigma[j,i] <- -rho
             }
         }

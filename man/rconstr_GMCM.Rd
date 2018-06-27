@@ -5,7 +5,7 @@
 This function will simulate data from a GMCM with n data points divided up between the number of clusters determined by the number of entries in prop. Observations from a single replicate are assumed to have mean mu and variance sigma. The data have dimension d (number of replicates), and number of components h (number of possible classifications, for a given replicate). Two replicates from the same component have correlation rho. If two replicates are from different components, their correlation is 0.
 }
 \usage{
-rconstr_GMCM(n, prop, mu, sigma, rho, h, d)
+rconstr_GMCM(n, prop, mu, sigma, rho, d)
 }
 \arguments{
     \item{n}{The number of observations.}
@@ -24,9 +24,10 @@ rconstr_GMCM(n, prop, mu, sigma, rho, h, d)
 \author{\email{hbk5086@psu.edu}}
 \seealso{\link{rGMCM}}
 \examples{
-pal <- get_pals(2)
+set.seed(123)
+pal <- sample(get_pals(4), 9, replace = FALSE)
 
-sim <- rconstr_GMCM(1000, rep(0.25, 9), 2, 1.1, .85, 2)
+sim <- rconstr_GMCM(3000, rep(1/9, 9), 3, .9, .8, 2)
 
 par(mfrow = c(1,2))
 plot(sim$data, col = pal[sim$cluster], main = "observed")

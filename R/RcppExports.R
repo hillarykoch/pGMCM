@@ -17,6 +17,10 @@ cfpGMM <- function(x, prop, mu, sigma, k, df, lambda, citermax, tol) {
     .Call(`_pGMCM_cfpGMM`, x, prop, mu, sigma, k, df, lambda, citermax, tol)
 }
 
+abs3 <- function(val) {
+    .Call(`_pGMCM_abs3`, val)
+}
+
 cget_constr_sigma <- function(sigma, rho, combos, d) {
     .Call(`_pGMCM_cget_constr_sigma`, sigma, rho, combos, d)
 }
@@ -37,11 +41,11 @@ optim_rcpp <- function(init_val, x, h_est, combos) {
     .Call(`_pGMCM_optim_rcpp`, init_val, x, h_est, combos)
 }
 
-teststuff <- function(combos) {
-    .Call(`_pGMCM_teststuff`, combos)
-}
-
 cfconstr_pGMM <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol) {
     .Call(`_pGMCM_cfconstr_pGMM`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol)
+}
+
+teststuff <- function(combos, sigma0) {
+    .Call(`_pGMCM_teststuff`, combos, sigma0)
 }
 

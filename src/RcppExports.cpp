@@ -66,6 +66,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// abs3
+double abs3(double val);
+RcppExport SEXP _pGMCM_abs3(SEXP valSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type val(valSEXP);
+    rcpp_result_gen = Rcpp::wrap(abs3(val));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cget_constr_sigma
 arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos, int d);
 RcppExport SEXP _pGMCM_cget_constr_sigma(SEXP sigmaSEXP, SEXP rhoSEXP, SEXP combosSEXP, SEXP dSEXP) {
@@ -130,17 +141,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// teststuff
-arma::mat teststuff(arma::mat combos);
-RcppExport SEXP _pGMCM_teststuff(SEXP combosSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type combos(combosSEXP);
-    rcpp_result_gen = Rcpp::wrap(teststuff(combos));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cfconstr_pGMM
 Rcpp::List cfconstr_pGMM(arma::mat& x, arma::rowvec prop, arma::mat mu, arma::mat sigma, double rho, arma::mat combos, int k, arma::rowvec df, int lambda, int citermax, double tol);
 RcppExport SEXP _pGMCM_cfconstr_pGMM(SEXP xSEXP, SEXP propSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP rhoSEXP, SEXP combosSEXP, SEXP kSEXP, SEXP dfSEXP, SEXP lambdaSEXP, SEXP citermaxSEXP, SEXP tolSEXP) {
@@ -162,19 +162,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// teststuff
+arma::mat teststuff(arma::mat combos, double sigma0);
+RcppExport SEXP _pGMCM_teststuff(SEXP combosSEXP, SEXP sigma0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type combos(combosSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma0(sigma0SEXP);
+    rcpp_result_gen = Rcpp::wrap(teststuff(combos, sigma0));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_choose_slice", (DL_FUNC) &_pGMCM_choose_slice, 4},
     {"_pGMCM_Mahalanobis", (DL_FUNC) &_pGMCM_Mahalanobis, 3},
     {"_pGMCM_cdmvnorm", (DL_FUNC) &_pGMCM_cdmvnorm, 3},
     {"_pGMCM_cfpGMM", (DL_FUNC) &_pGMCM_cfpGMM, 9},
+    {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_cget_constr_sigma", (DL_FUNC) &_pGMCM_cget_constr_sigma, 4},
     {"_pGMCM_trans_rho", (DL_FUNC) &_pGMCM_trans_rho, 1},
     {"_pGMCM_trans_rho_inv", (DL_FUNC) &_pGMCM_trans_rho_inv, 1},
     {"_pGMCM_func_to_optim", (DL_FUNC) &_pGMCM_func_to_optim, 4},
     {"_pGMCM_optim_rcpp", (DL_FUNC) &_pGMCM_optim_rcpp, 4},
-    {"_pGMCM_teststuff", (DL_FUNC) &_pGMCM_teststuff, 1},
     {"_pGMCM_cfconstr_pGMM", (DL_FUNC) &_pGMCM_cfconstr_pGMM, 11},
+    {"_pGMCM_teststuff", (DL_FUNC) &_pGMCM_teststuff, 2},
     {NULL, NULL, 0}
 };
 
