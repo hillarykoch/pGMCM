@@ -3,7 +3,7 @@
 The GMCM is a copula mixture that generalizes to any dimension. This package implements a general form of the pGMCM as well as a constrained version. It also implements a general and similarly constrained penalized Gaussian mixture model. The penalization allows for selection of the number of clusters, subject to a user-selected upper bound.
 
 General case:
-![triangle|50%](triangle.png)
+![triangle](triangle.png)
 
 Constrained case, with 9 components:
 ![nine](nine.jpg)
