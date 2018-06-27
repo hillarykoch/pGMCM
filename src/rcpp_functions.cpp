@@ -173,10 +173,10 @@ arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos,
     arma::mat Sigma = diagmat(sigma);
      for(int i = 0; i < d-1; ++i){
          for(int j = i+1; j < d; ++j){
-            if(combos(i) == combos(j)){
+            if(combos(i) == combos(j) & combos(i) != 0){
                 Sigma(i,j) = rho;
                 Sigma(j,i) = rho;
-            } else if(combos(i) == -combos(j)){
+            } else if(combos(i) == -combos(j) & combos(i) != 0){
                 Sigma(i,j) = -rho;
                 Sigma(j,i) = -rho;
             }
