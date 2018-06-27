@@ -58,8 +58,18 @@ rconstr_GMCM <- function(n, prop, mu, sigma, rho, d){
     sigma <- c(sigma,1,sigma)
     mu <- c(-mu,0,mu)
     prop <- prop/sum(prop)
+    
+    if(sum(prop == 0) > 0){
+        keepidx <- prop != 0
+        combos <- combos[keepidx,]
+        prop <- prop[keepidx]
+        k <- sum(keepidx)
+    }
+    
     num <- round(n*prop)
     tag <- rep(1:k, num)
+    
+    
     y <- lapply(seq(k),
                 function(X) rmvnorm(num[X], mean = mu[combos[X,]+2], sigma = get_constr_sigma(diag(sigma[combos[X,]+2]), rho, combos[X,]))) %>%
         abind(along = 1) %>%
@@ -117,9 +127,9 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
     tol <- 1e-4
     ll_old <- -Inf
     
-    for(step in seq(stepmax)){
+    for(stp in seq(stepmax)){
         # estimation and model selection of penalized GMM for optimal lambda
-        temp_fit <- fpGMM(z, kmax, lambda = NULL)
+        temp_fit <- fpGMM(z, kmax, lambda = lambda)
         
         # make updates
         k <- temp_fit$k
@@ -149,7 +159,7 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
         ll_old <- ll_new
         
         if(delta < tol){ break }
-        if(step > stepmax){ break }
+        if(stp > stepmax){ break }
     }
 
     xm <- by(data.frame(x, tag), INDICES = tag, FUN = colMeans) %>%
@@ -197,9 +207,9 @@ fconstr_pGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=2
     tol <- 1e-4
     ll_old <- -Inf
     
-    for(step in seq(stepmax)){
+    for(stp in seq(stepmax)){
         # estimation and model selection of penalized GMM for optimal lambda
-        temp_fit <- fpGMM(z, kmax, lambda = NULL)
+        temp_fit <- fpGMM(z, kmax, lambda = lambda)
         
         # make updates
         k <- temp_fit$k
@@ -229,7 +239,7 @@ fconstr_pGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=2
         ll_old <- ll_new
         
         if(delta < tol){ break }
-        if(step > stepmax){ break }
+        if(stp > stepmax){ break }
     }
     
     xm <- by(data.frame(x, tag), INDICES = tag, FUN = colMeans) %>%

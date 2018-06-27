@@ -7,7 +7,7 @@ Fit penalized Gaussian copula mixture model
 For a given maximum number of clusters in the data, find the optimal penalization parameter lambda and the optimal clustering. Lambda penalized the mixing proportions. Model optimality is determined by best BIC.
 }
 \usage{
-fpGMCM(x, kmax, lambda=NULL, tol=1e-06, itermax=200)
+fpGMCM(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200)
 }
 \arguments{
   \item{x}{An n by d numeric matrix of n observations with dimension d.}
@@ -16,7 +16,6 @@ fpGMCM(x, kmax, lambda=NULL, tol=1e-06, itermax=200)
   \item{tol}{Tolerance for the stopping rule for the EM algorithm. A lower tolerance will require more iterations. Defaults to 1e-06.}
   \item{stepmax}{Maximum number of updates from the copula process. Defaults to 50.}
   \item{itermax}{Maximum number of iterations of the EM algorithm to perform in the pGMM on the latent process. Defaults to 200.}
-  
 }
 \details{The model is fit using the expectation-maximization algorithm. Clusters are initialized using kmeans with kmax clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}
 \value{
@@ -49,7 +48,7 @@ sim <- rGMCM(n, prop, mu, sigma)
 fit <- fpGMCM(sim$data, kmax = 10)
 
 par(mfrow = c(1,2))
-plot(sim$data, col = rev(pal)[rep(1:3, each = 500)], pch = 16, cex = 0.75,
+plot(sim$data, col = rev(pal)[sim$cluster], pch = 16, cex = 0.75,
     xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
 plot(sim$data, col = rev(pal)[fit$cluster], pch = 16, cex = 0.75,
     xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters")
