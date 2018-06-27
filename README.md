@@ -6,7 +6,7 @@ General case:
 ![triangle](https://raw.githubusercontent.com/hillarykoch/pGMCM/master/triangle.pdf)
 
 Constrained case, with 9 components:
-![nine](nine.pdf)
+![nine](ninec.jpg)
 
 Constrained with 4 components, though the user-selected upper bound was still 9:
 ![subnine](subnine.pdf)
