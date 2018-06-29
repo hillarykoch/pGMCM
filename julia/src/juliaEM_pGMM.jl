@@ -62,7 +62,7 @@ function jfpGMM{T1<:Number, T2<:Number}(x::Array{Float64, 2},
         sigma_old = sigma_new[keepidx]
         pdf_est = pdf_est[:,keepidx]
         prob0 = h_est[:,keepidx]
-        h_est = h_est[:,kepidx]
+        h_est = h_est[:,keepidx]
         delta = 1
       else
         prop_old = prop_new
