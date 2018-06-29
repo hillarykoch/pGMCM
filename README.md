@@ -11,6 +11,6 @@ Constrained case with 9 components, with user-selected upper bound 9:
 Constrained with 4 components, with user-selected upper bound 9:
 ![subnine](subnine.png)
 
-
+*note: the R version is fully functional but the Julia code is just a test that cannot practically be used.*
 
 
