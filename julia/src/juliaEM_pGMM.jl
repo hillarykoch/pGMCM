@@ -81,6 +81,6 @@ function jfpGMM{T1<:Number, T2<:Number}(x::Array{Float64, 2},
               "mu" = mu_old,
               "sigma" => sigma_old,
               "pdf_est" => pdf_est,
-              "ll" => sum(log(sum(prob0,1)))),
+              "ll" => sum(log.(sum(prob0,2)))),
               "cluster" => tag)
 end
