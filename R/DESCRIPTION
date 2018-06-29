@@ -1,0 +1,25 @@
+Package: pGMCM
+Type: Package
+Title: Analysis with Penalized Gaussian Copula Mixture Models
+Version: 0.1.0
+Author: Hillary Koch
+Maintainer: <hillary.koch01@gmail.com>
+Description: Simulation, model fitting, and classification with Gaussian copula mixture models.
+License: Artistic-2.0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    abind,
+    dplyr,
+    magrittr,
+    mvtnorm,
+    plyr,
+    purrr,
+    Rcpp (>= 0.12.16),
+    RcppNumerical,
+    stats
+LinkingTo:
+    Rcpp,
+    RcppArmadillo,
+    RcppEigen,
+    RcppNumerical
