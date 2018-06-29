@@ -26,10 +26,10 @@ function jfpGMM{T1<:Number, T2<:Number}(x::Array{Float64, 2},
   while stp < itermax
     # E step
     for i in 1:k
-      tmp_mu = mu_old[i,:]
-      tmp_sigma = sigma_old[i]
-      pdf_est[:,i] = pdf(MvNormal(tmp_mu, PDMat(cholfact(Hermitian(tmp_sigma)))),x')
-      prob0[:,i] = pdf_est[:,i].*prop_old[i]
+      @inbounds tmp_mu = mu_old[i,:]
+      @inbounds tmp_sigma = sigma_old[i]
+      @inbounds pdf_est[:,i] = pdf(MvNormal(tmp_mu, PDMat(cholfact(Hermitian(tmp_sigma)))),x')
+      @inbounds prob0[:,i] = pdf_est[:,i].*prop_old[i]
     end
     h_est = prob0./sum(prob0,2)
 
@@ -37,7 +37,7 @@ function jfpGMM{T1<:Number, T2<:Number}(x::Array{Float64, 2},
     mu_new = *(h_est',x)./sum(h_est,1)'
     sigma_new = deepcopy(sigma_old)
     for i in 1:k
-      sigma_new[i] = *((x-reshape(kron(mu[i,:], rep(1,times = n)), (n,d)))',
+      @inbounds sigma_new[i] = *((x-reshape(kron(mu[i,:], rep(1,times = n)), (n,d)))',
                       diagm(h_est[:,i]),
                       (x-reshape(kron(mu[i,:], rep(1,times = n)), (n,d))))./sum(h_est[:,i])
     end
@@ -78,9 +78,9 @@ function jfpGMM{T1<:Number, T2<:Number}(x::Array{Float64, 2},
   tag = mapslices(indmax, h_est, 2)
   return Dict("k" => k,
               "prop" => prop_old,
-              "mu" = mu_old,
+              "mu" => mu_old,
               "sigma" => sigma_old,
               "pdf_est" => pdf_est,
-              "ll" => sum(log.(sum(prob0,2)))),
+              "ll" => sum(log.(sum(prob0,2))),
               "cluster" => tag)
 end
