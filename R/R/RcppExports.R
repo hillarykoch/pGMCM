@@ -45,7 +45,3 @@ cfconstr_pGMM <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citerm
     .Call(`_pGMCM_cfconstr_pGMM`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol)
 }
 
-teststuff <- function(combos, sigma0) {
-    .Call(`_pGMCM_teststuff`, combos, sigma0)
-}
-

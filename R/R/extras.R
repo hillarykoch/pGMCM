@@ -91,7 +91,7 @@ fpGMM <- function(x, kmax, lambda=NULL, tol = 1e-06, itermax = 200){
 
 # choose the corresponding lambda of max BIC in constrained penalized GMM and get best estimates
 # The constraints here are that
-fconstr_pGMM <- function(x, kmax=NULL, lambda=NULL, tol = 1e-06, itermax = 200){
+fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
     # x: a matrix of data with rows for observations and columns for features
     # kmax: max number of clusters
     # lambda: a parameter of penalty term

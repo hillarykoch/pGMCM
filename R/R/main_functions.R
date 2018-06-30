@@ -175,14 +175,13 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
 }
 
 # fit the constrained pGMCM
-fconstr_pGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
+fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
     # x: a matrix of data with rows for observations and columns for features
-    # kmax: max number of clusters
     n <- nrow(x)   # sample size
     d <- ncol(x)   # dimension
 
     # initialize with pGMM
-    init <- fconstr_pGMM(x, kmax, lambda = c(.1,0,1), tol=1e-04, itermax=200)
+    init <- fconstr_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)
     prop0 <- init$prop
     mu0 <- init$mu
     sigma0 <- init$sigma
@@ -209,7 +208,7 @@ fconstr_pGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=2
 
     for(stp in seq(stepmax)){
         # estimation and model selection of penalized GMM for optimal lambda
-        temp_fit <- fconstr_pGMM(z, kmax, lambda = lambda, tol = tol, itermax = itermax)
+        temp_fit <- fconstr_pGMM(z, lambda = lambda, tol = tol, itermax = itermax)
 
         # make updates
         k <- temp_fit$k

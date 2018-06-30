@@ -12,13 +12,12 @@ fconstr_pGMCM(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{An n by d numeric matrix of n observations with dimension d.}
-  \item{kmax}{Maximum number of clusters to consider, and the number of clusters the algorithm is initialized with.}
   \item{lambda}{Penalty parameter. If unspecified, a grid is automatically generated.}
   \item{tol}{Tolerance for the stopping rule for the EM algorithm. A lower tolerance will require more iterations. Defaults to 1e-06.}
   \item{stepmax}{Maximum number of updates from the copula process. Defaults to 50.}
   \item{itermax}{Maximum number of iterations of the EM algorithm to perform in the pGMM on the latent process. Defaults to 200.}
 }
-\details{The model is fit using the expectation-maximization algorithm. Clusters are initialized using kmeans with kmax clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}
+\details{The model is fit using the expectation-maximization algorithm. Clusters are initialized using kmeans with 3^d clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}
 \value{
 \item{k}{Optimal number of clusters.}
 \item{prop}{Mixing proportions in each cluster.}

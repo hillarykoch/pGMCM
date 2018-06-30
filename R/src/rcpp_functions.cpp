@@ -49,15 +49,15 @@ arma::vec cdmvnorm(arma::mat x, arma::rowvec mu, arma::mat sigma){
 // estimation and model selection of penalized GMM
 // [[Rcpp::export]]
 Rcpp::List cfpGMM(arma::mat& x,
-                arma::rowvec prop,
-                arma::mat& mu,
-                arma::cube& sigma,
-                int k,
-                double df,
-                double lambda,
-                int citermax,
-                double tol
-                ) {
+                  arma::rowvec prop,
+                  arma::mat& mu,
+                  arma::cube& sigma,
+                  int k,
+                  double df,
+                  double lambda,
+                  int citermax,
+                  double tol
+) {
 
     const int n = x.n_rows;
     const int d = x.n_cols;
@@ -171,8 +171,8 @@ double abs3(double val){
 // [[Rcpp::export]]
 arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos, int d){
     arma::mat Sigma = diagmat(sigma);
-     for(int i = 0; i < d-1; ++i){
-         for(int j = i+1; j < d; ++j){
+    for(int i = 0; i < d-1; ++i){
+        for(int j = i+1; j < d; ++j){
             if(combos(i) == combos(j) & combos(i) != 0){
                 Sigma(i,j) = rho;
                 Sigma(j,i) = rho;
@@ -393,7 +393,6 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
 }
 
 // test stuff
-// [[Rcpp::export]]
 arma::mat teststuff(arma::mat combos, double sigma0) {
     arma::uvec zeroidx = find(combos == 0);
     arma::mat sigma = abs(sigma0*combos);

@@ -162,18 +162,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// teststuff
-arma::mat teststuff(arma::mat combos, double sigma0);
-RcppExport SEXP _pGMCM_teststuff(SEXP combosSEXP, SEXP sigma0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type combos(combosSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma0(sigma0SEXP);
-    rcpp_result_gen = Rcpp::wrap(teststuff(combos, sigma0));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_choose_slice", (DL_FUNC) &_pGMCM_choose_slice, 4},
@@ -187,7 +175,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_func_to_optim", (DL_FUNC) &_pGMCM_func_to_optim, 4},
     {"_pGMCM_optim_rcpp", (DL_FUNC) &_pGMCM_optim_rcpp, 4},
     {"_pGMCM_cfconstr_pGMM", (DL_FUNC) &_pGMCM_cfconstr_pGMM, 11},
-    {"_pGMCM_teststuff", (DL_FUNC) &_pGMCM_teststuff, 2},
     {NULL, NULL, 0}
 };
 
