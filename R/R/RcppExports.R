@@ -45,3 +45,39 @@ cfconstr_pGMM <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citerm
     .Call(`_pGMCM_cfconstr_pGMM`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol)
 }
 
+bind_diags <- function(Sigma_in) {
+    .Call(`_pGMCM_bind_diags`, Sigma_in)
+}
+
+bind_offdiags <- function(Sigma_in) {
+    .Call(`_pGMCM_bind_offdiags`, Sigma_in)
+}
+
+get_sigma_optim <- function(diagbind, combos) {
+    .Call(`_pGMCM_get_sigma_optim`, diagbind, combos)
+}
+
+get_mu_optim <- function(mu_in, combos) {
+    .Call(`_pGMCM_get_mu_optim`, mu_in, combos)
+}
+
+get_rho_optim <- function(rhobind, combos) {
+    .Call(`_pGMCM_get_rho_optim`, rhobind, combos)
+}
+
+func_to_optim0 <- function(init_val, x, h_est, combos, a, b, c, negidx) {
+    .Call(`_pGMCM_func_to_optim0`, init_val, x, h_est, combos, a, b, c, negidx)
+}
+
+optim0_rcpp <- function(init_val, x, h_est, combos, a, b, c, negidx) {
+    .Call(`_pGMCM_optim0_rcpp`, init_val, x, h_est, combos, a, b, c, negidx)
+}
+
+cfconstr0_pGMM <- function(x, prop, mu, Sigma, combos, k, df, lambda, citermax, tol) {
+    .Call(`_pGMCM_cfconstr0_pGMM`, x, prop, mu, Sigma, combos, k, df, lambda, citermax, tol)
+}
+
+teststuff <- function(mu_old, Sigma_old, combos) {
+    .Call(`_pGMCM_teststuff`, mu_old, Sigma_old, combos)
+}
+
