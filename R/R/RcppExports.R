@@ -77,6 +77,18 @@ cfconstr0_pGMM <- function(x, prop, mu, Sigma, combos, k, df, lambda, citermax, 
     .Call(`_pGMCM_cfconstr0_pGMM`, x, prop, mu, Sigma, combos, k, df, lambda, citermax, tol)
 }
 
+cduvnorm <- function(x, mu, sigma) {
+    .Call(`_pGMCM_cduvnorm`, x, mu, sigma)
+}
+
+cmarg_ll_gmm <- function(z, mu, sigma, prop, combos, k) {
+    .Call(`_pGMCM_cmarg_ll_gmm`, z, mu, sigma, prop, combos, k)
+}
+
+cll_gmm <- function(z, mu, sigma, rho, prop, combos, k) {
+    .Call(`_pGMCM_cll_gmm`, z, mu, sigma, rho, prop, combos, k)
+}
+
 teststuff <- function(mu_old, Sigma_old, combos) {
     .Call(`_pGMCM_teststuff`, mu_old, Sigma_old, combos)
 }

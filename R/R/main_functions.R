@@ -10,7 +10,7 @@ rGMCM <- function(n, prop, mu, sigma){
     prop <- prop/sum(prop)
     k <- length(prop)
     d <- ifelse(length(prop) == 1, nrow(sigma), nrow(sigma[[1]]))
-    
+
     num <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
         sort %>%
         rle %$%
@@ -70,7 +70,7 @@ rconstr_GMCM <- function(n, prop, mu, sigma, rho, d){
         prop <- prop[keepidx]
         k <- sum(keepidx)
     }
-    
+
     num <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
         sort %>%
         rle %$%
@@ -214,12 +214,14 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
     d <- ncol(x)   # dimension
 
     # initialize with pGMM
-    if(lambda == 0){
-        init <- fpGMM(x, kmax, lambda = 0, tol=1e-04, itermax=200)
+    if(!is.null(lambda)){
+        if(lambda == 0){
+            init <- fpGMM(x, kmax, lambda = 0, tol=1e-04, itermax=200)
+        }
     } else{
-        init <- fpGMM(x, kmax, lambda = c(.1,0,1), tol=1e-04, itermax=200)    
+        init <- fpGMM(x, kmax, lambda = c(.1,0,1), tol=1e-04, itermax=200)
     }
-    
+
     prop0 <- init$prop
     mu0 <- init$mu
     sigma0 <- init$sigma
@@ -299,10 +301,12 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
     d <- ncol(x)   # dimension
 
     # initialize with pGMM
-    if(lambda == 0){
-        init <- fconstr_pGMM(x, lambda = 0, tol=1e-04, itermax=200)    
+    if(!is.null(lambda)){
+        if(lambda == 0){
+            init <- fconstr_pGMM(x, lambda = 0, tol=1e-04, itermax=200)
+        }
     } else{
-        init <- fconstr_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)    
+        init <- fconstr_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)
     }
     prop0 <- init$prop
     mu0 <- init$mu
@@ -327,10 +331,10 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
     delta <- 1
     tol <- 1e-4
     #ll_old <- -Inf
-    
+
     # Keep track of parameter estimates across each iteration
     param.tr <- list()
-    param.tr[[1]] <- c("mu" = mu0,
+    param.tr[[1]] <- list("mu" = mu0,
                        "sigma" = sigma0,
                        "rho" = NA,
                        "prop" = prop0,
@@ -338,7 +342,7 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
                        "df" = NA,
                        "lambda" = NA,
                        "cluster" = NA)
-    
+
     # Keep track of various likelihood estimates across each iteration
     ll.tr <- matrix(rep(NA,2*(stepmax+1)),
                     nrow = 2,
@@ -357,9 +361,9 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
         tag <- temp_fit$cluster
         zlambda <- temp_fit$lambda
         #ll_new <- temp_fit$ll
-        ll.tr["gmm_ll",stp] <- ll_new
-        
-        param.tr[[stp]] <- c("mu" = zmu,
+        ll.tr["gmm_ll",stp] <- temp_fit$ll
+
+        param.tr[[stp]] <- list("mu" = zmu,
                            "sigma" = zsigma,
                            "rho" = temp_fit$rho,
                            "prop" = zprop,
@@ -379,10 +383,10 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
             abind(along = 2) %>%
             as.data.frame %>%
             setNames(sapply(seq(d), function(X) paste0("z.", X)))
-        
+
         # compute copula likelihood
-        ll.tr["gmcm_ll", stp] <- cll_gmm(z, zmu, zsigma, temp_fit$rho, zprop, combos, k) - 
-            cgmm_marg_ll(z, zmu, zsigma, zprop,temp_fit$combos, k)
+        ll.tr["gmcm_ll", stp] <- cll_gmm(as.matrix(z), zmu, zsigma, temp_fit$rho, zprop, temp_fit$combos, k) -
+            cmarg_ll_gmm(as.matrix(z), zmu, zsigma, zprop, temp_fit$combos, k)
 
         # measure the difference between two iteration
         delta <- switch(convCrit,
@@ -406,7 +410,7 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
     # list("k" = k, "prop" = zprop, "mu" = zmu, "sigma" = zsigma,
     #      "rho" = temp_fit$rho, "cluster" = tag, "lambda" = zlambda,
     #      "ll" = ll_old)
-    
+
     out <- param.tr[[best_stp]]
     out$ll_gmcm <- ll.tr["gmcm_ll",best_stp]
     out
@@ -419,10 +423,12 @@ fconstr0_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
     d <- ncol(x)   # dimension
 
     # initialize with pGMM
-    if(lambda == 0){
-        init <- fconstr0_pGMM(x, lambda = 0, tol = 1e-04, itermax = 200)
+    if(!is.null(lambda)){
+        if(lambda == 0){
+            init <- fconstr0_pGMM(x, lambda = 0, tol = 1e-04, itermax = 200)
+        }
     } else{
-        init <- fconstr0_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)    
+        init <- fconstr0_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)
     }
     prop0 <- init$prop
     mu0 <- init$mu

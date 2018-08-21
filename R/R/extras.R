@@ -156,7 +156,7 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
     if(is.data.frame(x)){
         x <- as.matrix(x)
     }
-    
+
 
     for(i in seq_along(lambda)){
         # estimate penalized GMM for a given lambda
@@ -184,6 +184,7 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
             bestlam <- lambda[i]
             ll_out <- ll_temp
             post_prob <- curGMM$post_prob
+            combos <- curGMM$combos
         }
     }
 

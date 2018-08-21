@@ -763,8 +763,8 @@ arma::colvec cduvnorm(arma::colvec x, double mu, double sigma){
     arma::colvec mdist = ((x-mu) % (x-mu))/(sigma);
     const double log2pi = std::log(2.0 * M_PI);
     double logcoef = -(log2pi + log(sigma));
-    arma::vec logretval = (logcoef - mdist)/2;
-    
+    arma::colvec logretval = (logcoef - mdist)/2;
+
     return exp(logretval);
 }
 
@@ -773,7 +773,7 @@ arma::colvec cduvnorm(arma::colvec x, double mu, double sigma){
 double cmarg_ll_gmm(arma::mat& z,
                     arma::mat mu,
                     arma::mat sigma,
-                    arma::colvec prop,
+                    arma::rowvec prop,
                     arma::mat combos,
                     int k) {
     const int n = z.n_rows;
@@ -782,43 +782,40 @@ double cmarg_ll_gmm(arma::mat& z,
     arma::mat pdf_est(n,k,arma::fill::none);
     double tmp_sigma;
     double tmp_mu;
-    
+
     for(int i = 0; i < d; ++i){
         for(int j = 0; j < k; ++j) {
-            tmp_mu = mu(i,j);
-            tmp_sigma = sigma(i,j);
-            pdf_est.col(j) = prop(j) * cduvnorm(x, tmp_mu, tmp_sigma);
+            tmp_mu = mu(j,i);
+            tmp_sigma = sigma(j,i);
+            pdf_est.col(j) = prop(j) * cduvnorm(z.col(i), tmp_mu, tmp_sigma);
         }
         mll.col(i) = log(sum(pdf_est,1));
     }
-    
-    return sum(mll);
+    return accu(mll);
 }
 
-// computing joint likelihood of gmm (for copula likelihood)
+// computing joint likelihood of constrained gmm (for copula likelihood)
 // [[Rcpp::export]]
 double cll_gmm(arma::mat& z,
-                    arma::mat mu,
-                    arma::mat sigma,
-                    double rho,
-                    arma::colvec prop,
-                    arma::mat combos,
-                    int k) {
+               arma::mat mu,
+               arma::mat sigma,
+               double rho,
+               arma::rowvec prop,
+               arma::mat combos,
+               int k) {
     const int n = z.n_rows;
     const int d = z.n_cols;
     arma::rowvec tmp_mu(d, arma::fill::none);
     arma::mat tmp_sigma(d, d, arma::fill::none);
     arma::mat pdf_est(n,k,arma::fill::none);
-    
+
     for(int i = 0; i < k; ++i) {
         tmp_mu = mu.row(i);
         tmp_sigma = cget_constr_sigma(sigma.row(i), rho, combos.row(i), d);
-        pdf_est.col(i) = prop(i) * cdmvnorm(x, tmp_mu, tmp_sigma);
+        pdf_est.col(i) = prop(i) * cdmvnorm(z, tmp_mu, tmp_sigma);
     }
-    
-    sum(log(sum(prob0,1)))
-    
-    return sum(log(sum(pdf_est,1)));
+
+    return accu(log(sum(pdf_est,1)));
 }
 
 // test stuff

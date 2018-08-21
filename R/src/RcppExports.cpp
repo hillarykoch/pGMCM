@@ -276,6 +276,52 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cduvnorm
+arma::colvec cduvnorm(arma::colvec x, double mu, double sigma);
+RcppExport SEXP _pGMCM_cduvnorm(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::colvec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    rcpp_result_gen = Rcpp::wrap(cduvnorm(x, mu, sigma));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cmarg_ll_gmm
+double cmarg_ll_gmm(arma::mat& z, arma::mat mu, arma::mat sigma, arma::rowvec prop, arma::mat combos, int k);
+RcppExport SEXP _pGMCM_cmarg_ll_gmm(SEXP zSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP propSEXP, SEXP combosSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type z(zSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type prop(propSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type combos(combosSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(cmarg_ll_gmm(z, mu, sigma, prop, combos, k));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cll_gmm
+double cll_gmm(arma::mat& z, arma::mat mu, arma::mat sigma, double rho, arma::rowvec prop, arma::mat combos, int k);
+RcppExport SEXP _pGMCM_cll_gmm(SEXP zSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP rhoSEXP, SEXP propSEXP, SEXP combosSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type z(zSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type prop(propSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type combos(combosSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(cll_gmm(z, mu, sigma, rho, prop, combos, k));
+    return rcpp_result_gen;
+END_RCPP
+}
 // teststuff
 arma::colvec teststuff(arma::mat mu_old, arma::cube Sigma_old, arma::mat combos);
 RcppExport SEXP _pGMCM_teststuff(SEXP mu_oldSEXP, SEXP Sigma_oldSEXP, SEXP combosSEXP) {
@@ -310,6 +356,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_func_to_optim0", (DL_FUNC) &_pGMCM_func_to_optim0, 8},
     {"_pGMCM_optim0_rcpp", (DL_FUNC) &_pGMCM_optim0_rcpp, 8},
     {"_pGMCM_cfconstr0_pGMM", (DL_FUNC) &_pGMCM_cfconstr0_pGMM, 10},
+    {"_pGMCM_cduvnorm", (DL_FUNC) &_pGMCM_cduvnorm, 3},
+    {"_pGMCM_cmarg_ll_gmm", (DL_FUNC) &_pGMCM_cmarg_ll_gmm, 6},
+    {"_pGMCM_cll_gmm", (DL_FUNC) &_pGMCM_cll_gmm, 7},
     {"_pGMCM_teststuff", (DL_FUNC) &_pGMCM_teststuff, 3},
     {NULL, NULL, 0}
 };
