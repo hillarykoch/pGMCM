@@ -392,7 +392,8 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
                               Rcpp::Named("pdf_est") = pdf_est,
                               Rcpp::Named("ll") = sum(log(sum(prob0,1))),
                               Rcpp::Named("cluster") = tag+1,
-                              Rcpp::Named("post_prob") = h_est);
+                              Rcpp::Named("post_prob") = h_est,
+                              Rcpp::Named("combos") = combos);
 }
 
 
@@ -756,6 +757,69 @@ Rcpp::List cfconstr0_pGMM(arma::mat& x,
                               Rcpp::Named("post_prob") = h_est);
 }
 
+// Compute density of univariate normal
+// [[Rcpp::export]]
+arma::colvec cduvnorm(arma::colvec x, double mu, double sigma){
+    arma::colvec mdist = ((x-mu) % (x-mu))/(sigma);
+    const double log2pi = std::log(2.0 * M_PI);
+    double logcoef = -(log2pi + log(sigma));
+    arma::vec logretval = (logcoef - mdist)/2;
+    
+    return exp(logretval);
+}
+
+// computing marginal likelihood of gmm (for copula likelihood)
+// [[Rcpp::export]]
+double cmarg_ll_gmm(arma::mat& z,
+                    arma::mat mu,
+                    arma::mat sigma,
+                    arma::colvec prop,
+                    arma::mat combos,
+                    int k) {
+    const int n = z.n_rows;
+    const int d = z.n_cols;
+    arma::mat mll(n,d,arma::fill::none);
+    arma::mat pdf_est(n,k,arma::fill::none);
+    double tmp_sigma;
+    double tmp_mu;
+    
+    for(int i = 0; i < d; ++i){
+        for(int j = 0; j < k; ++j) {
+            tmp_mu = mu(i,j);
+            tmp_sigma = sigma(i,j);
+            pdf_est.col(j) = prop(j) * cduvnorm(x, tmp_mu, tmp_sigma);
+        }
+        mll.col(i) = log(sum(pdf_est,1));
+    }
+    
+    return sum(mll);
+}
+
+// computing joint likelihood of gmm (for copula likelihood)
+// [[Rcpp::export]]
+double cll_gmm(arma::mat& z,
+                    arma::mat mu,
+                    arma::mat sigma,
+                    double rho,
+                    arma::colvec prop,
+                    arma::mat combos,
+                    int k) {
+    const int n = z.n_rows;
+    const int d = z.n_cols;
+    arma::rowvec tmp_mu(d, arma::fill::none);
+    arma::mat tmp_sigma(d, d, arma::fill::none);
+    arma::mat pdf_est(n,k,arma::fill::none);
+    
+    for(int i = 0; i < k; ++i) {
+        tmp_mu = mu.row(i);
+        tmp_sigma = cget_constr_sigma(sigma.row(i), rho, combos.row(i), d);
+        pdf_est.col(i) = prop(i) * cdmvnorm(x, tmp_mu, tmp_sigma);
+    }
+    
+    sum(log(sum(prob0,1)))
+    
+    return sum(log(sum(pdf_est,1)));
+}
 
 // test stuff
 // [[Rcpp::export]]
@@ -779,4 +843,3 @@ arma::colvec teststuff(arma::mat mu_old, arma::cube Sigma_old, arma::mat combos)
     init_val.subvec(a+b, a+b+c-1) = rho_in; // = { abs(sgn_mu_in), log(sigma_in), rho_in };
     return init_val;
 }
-

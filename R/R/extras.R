@@ -156,6 +156,7 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
     if(is.data.frame(x)){
         x <- as.matrix(x)
     }
+    
 
     for(i in seq_along(lambda)){
         # estimate penalized GMM for a given lambda
@@ -186,8 +187,10 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
         }
     }
 
-    list("k" = k_out, "prop" = prop_out, "mu" = mu_out, "sigma" = sigma_out, "rho" = rho_out, "df" = df_out,
-         "cluster" = cl_out, "BIC" = bestBIC, "lambda" = bestlam, "ll" = ll_out, "post_prob" = post_prob)
+    list("k" = k_out, "prop" = prop_out, "mu" = mu_out, "sigma" = sigma_out,
+         "rho" = rho_out, "df" = df_out, "cluster" = cl_out, "BIC" = bestBIC,
+         "lambda" = bestlam, "ll" = ll_out, "post_prob" = post_prob,
+         "combos" = combos)
 }
 
 # choose the corresponding lambda of max BIC in constrained penalized GMM and get best estimates

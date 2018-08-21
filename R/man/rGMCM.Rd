@@ -19,7 +19,7 @@ This function will simulate data from a GMCM with n data points divided up betwe
     \item{z}{An n by d numeric matrix corresponding to the latent process.}
     \item{cluster}{Integer vector of the true cluster labels.}
 }
-\seealso{\link{rconstr_GMCM}}
+\seealso{\link{rconstr_GMCM}, \link{rconstr0_GMCM}}
 \author{\email{hbk5086@psu.edu}}
 \examples{
 sim <- rGMCM(1500, prop = c(1/3,1/3,1/3),

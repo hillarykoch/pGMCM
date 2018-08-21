@@ -10,17 +10,14 @@ rGMCM <- function(n, prop, mu, sigma){
     prop <- prop/sum(prop)
     k <- length(prop)
     d <- ifelse(length(prop) == 1, nrow(sigma), nrow(sigma[[1]]))
-
-    num <- ceiling(n*prop)
-    rles <- rep.int(1:k, times = num) %>%
-        sample(size = n, replace = F) %>%
+    
+    num <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
         sort %>%
-        rle
-    num <- rep(0,k)
-    num[rles$values] <- rles$lengths
+        rle %$%
+        lengths
 
     tag <- rep(1:k, times = num)
-    y <- lapply(rles$values,
+    y <- lapply(seq_along(prop),
                 function(X) rmvnorm(num[X], mean = mu[[X]], sigma = sigma[[X]])) %>%
         abind(along = 1) %>%
         data.frame %>%
@@ -73,17 +70,14 @@ rconstr_GMCM <- function(n, prop, mu, sigma, rho, d){
         prop <- prop[keepidx]
         k <- sum(keepidx)
     }
-
-    num <- ceiling(n*prop)
-    rles <- rep.int(1:k, times = num) %>%
-        sample(size = n, replace = F) %>%
+    
+    num <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
         sort %>%
-        rle
-    num <- rep(0,k)
-    num[rles$values] <- rles$lengths
+        rle %$%
+        lengths
     tag <- rep.int(1:k, times = num)
 
-    y <- lapply(rles$values,
+    y <- lapply(seq_along(prop),
                 function(X) rmvnorm(num[X],
                                     mean = mu[combos[X,]+2],
                                     sigma = get_constr_sigma(
@@ -176,16 +170,13 @@ rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d){
         k <- sum(keepidx)
     }
 
-    num <- ceiling(n*prop)
-    rles <- rep.int(1:k, times = num) %>%
-        sample(size = n, replace = F) %>%
+    num <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
         sort %>%
-        rle
-    num <- rep(0,k)
-    num[rles$values] <- rles$lengths
+        rle %$%
+        lengths
     tag <- rep.int(1:k, times = num)
 
-    y <- lapply(rles$values,
+    y <- lapply(seq_along(prop),
                 function(X)
                     rmvnorm(num[X],
                             mean = mu_combos[X,],
@@ -223,7 +214,12 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
     d <- ncol(x)   # dimension
 
     # initialize with pGMM
-    init <- fpGMM(x, kmax, lambda = c(.1,0,1), tol=1e-04, itermax=200)
+    if(lambda == 0){
+        init <- fpGMM(x, kmax, lambda = 0, tol=1e-04, itermax=200)
+    } else{
+        init <- fpGMM(x, kmax, lambda = c(.1,0,1), tol=1e-04, itermax=200)    
+    }
+    
     prop0 <- init$prop
     mu0 <- init$mu
     sigma0 <- init$sigma
@@ -273,7 +269,7 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
             as.data.frame %>%
             setNames(sapply(seq(d), function(X) paste0("z.", X)))
 
-        # measure the difference between two iteration
+        # measure the difference between two iterations
         delta <- abs((ll_new - ll_old) / ll_old)
         if(is.na(delta)){ delta <- 1 }
 
@@ -296,13 +292,18 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
 }
 
 # fit the constrained pGMCM
-fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
+fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
+                          itermax=200, convCrit = c("GMCM", "GMM")){
     # x: a matrix of data with rows for observations and columns for features
     n <- nrow(x)   # sample size
     d <- ncol(x)   # dimension
 
     # initialize with pGMM
-    init <- fconstr_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)
+    if(lambda == 0){
+        init <- fconstr_pGMM(x, lambda = 0, tol=1e-04, itermax=200)    
+    } else{
+        init <- fconstr_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)    
+    }
     prop0 <- init$prop
     mu0 <- init$mu
     sigma0 <- init$sigma
@@ -325,9 +326,26 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
 
     delta <- 1
     tol <- 1e-4
-    ll_old <- -Inf
+    #ll_old <- -Inf
+    
+    # Keep track of parameter estimates across each iteration
+    param.tr <- list()
+    param.tr[[1]] <- c("mu" = mu0,
+                       "sigma" = sigma0,
+                       "rho" = NA,
+                       "prop" = prop0,
+                       "k" = k,
+                       "df" = NA,
+                       "lambda" = NA,
+                       "cluster" = NA)
+    
+    # Keep track of various likelihood estimates across each iteration
+    ll.tr <- matrix(rep(NA,2*(stepmax+1)),
+                    nrow = 2,
+                    dimnames = list(c("gmm_ll", "gmcm_ll"), seq(stepmax+1)))
+    ll.tr[,1] <- -Inf
 
-    for(stp in seq(stepmax)){
+    for(stp in 2:(stepmax+1)){
         # estimation and model selection of penalized GMM for optimal lambda
         temp_fit <- fconstr_pGMM(z, lambda = lambda, tol = tol, itermax = itermax)
 
@@ -338,7 +356,17 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
         zsigma <- temp_fit$sigma
         tag <- temp_fit$cluster
         zlambda <- temp_fit$lambda
-        ll_new <- temp_fit$ll
+        #ll_new <- temp_fit$ll
+        ll.tr["gmm_ll",stp] <- ll_new
+        
+        param.tr[[stp]] <- c("mu" = zmu,
+                           "sigma" = zsigma,
+                           "rho" = temp_fit$rho,
+                           "prop" = zprop,
+                           "k" = k,
+                           "df" = temp_fit$df,
+                           "lambda" = zlambda,
+                           "cluster" = tag)
 
         if(k <= 1) { break }
 
@@ -351,18 +379,37 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
             abind(along = 2) %>%
             as.data.frame %>%
             setNames(sapply(seq(d), function(X) paste0("z.", X)))
+        
+        # compute copula likelihood
+        ll.tr["gmcm_ll", stp] <- cll_gmm(z, zmu, zsigma, temp_fit$rho, zprop, combos, k) - 
+            cgmm_marg_ll(z, zmu, zsigma, zprop,temp_fit$combos, k)
 
         # measure the difference between two iteration
-        delta <- abs((ll_new - ll_old) / ll_old)
+        delta <- switch(convCrit,
+                        "GMCM" = abs(ll.tr["gmcm_ll",stp] - ll.tr["gmcm_ll",stp-1]),
+                        "GMM" = abs(ll.tr["gmm_ll",stp] - ll.tr["gmm_ll",stp-1])
+                        )
+        #delta <- abs((ll_new - ll_old) / ll_old)
         if(is.na(delta)){ delta <- 1 }
 
-        ll_old <- ll_new
+        #ll_old <- ll_new
 
-        if(delta < tol){ break }
-        if(stp > stepmax){ break }
+        if(delta < tol){
+            break
+        }
+        if(stp > stepmax+1){
+            warning("Maximum number of steps reached before convergence.")
+        }
     }
+    best_stp <- which.max(ll.tr["gmcm_ll",])
 
-    list("k" = k, "prop" = zprop, "mu" = zmu, "sigma" = zsigma, "rho" = temp_fit$rho, "cluster" = tag, "lambda" = zlambda, "ll" = ll_old)
+    # list("k" = k, "prop" = zprop, "mu" = zmu, "sigma" = zsigma,
+    #      "rho" = temp_fit$rho, "cluster" = tag, "lambda" = zlambda,
+    #      "ll" = ll_old)
+    
+    out <- param.tr[[best_stp]]
+    out$ll_gmcm <- ll.tr["gmcm_ll",best_stp]
+    out
 }
 
 # fit the second constrained version of pGMCM
@@ -372,7 +419,11 @@ fconstr0_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
     d <- ncol(x)   # dimension
 
     # initialize with pGMM
-    init <- fconstr0_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)
+    if(lambda == 0){
+        init <- fconstr0_pGMM(x, lambda = 0, tol = 1e-04, itermax = 200)
+    } else{
+        init <- fconstr0_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)    
+    }
     prop0 <- init$prop
     mu0 <- init$mu
     Sigma0 <- init$Sigma
@@ -396,6 +447,7 @@ fconstr0_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
     delta <- 1
     tol <- 1e-4
     ll_old <- -Inf
+
 
     for(stp in seq(stepmax)){
         # estimation and model selection of penalized GMM for optimal lambda
@@ -432,5 +484,5 @@ fconstr0_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
         if(stp > stepmax){ break }
     }
 
-    list("k" = k, "prop" = zprop, "mu" = zmu, "Sigma" = zSigma, "rho" = temp_fit$rho, "cluster" = tag, "lambda" = zlambda, "ll" = ll_old)
+    list("k" = k, "prop" = zprop, "mu" = zmu, "Sigma" = zSigma, "cluster" = tag, "lambda" = zlambda, "ll" = ll_old)
 }

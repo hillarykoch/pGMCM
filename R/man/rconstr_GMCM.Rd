@@ -22,7 +22,7 @@ rconstr_GMCM(n, prop, mu, sigma, rho, d)
     \item{cluster}{Integer vector of the true cluster labels.}
 }
 \author{\email{hbk5086@psu.edu}}
-\seealso{\link{rGMCM}}
+\seealso{\link{rGMCM}, \link{rconstr0_GMCM}}
 \examples{
 set.seed(123)
 pal <- sample(get_pals(4), 9, replace = FALSE)
