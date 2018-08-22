@@ -322,6 +322,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cmarg0_ll_gmm
+double cmarg0_ll_gmm(arma::mat& z, arma::mat mu, arma::cube Sigma, arma::rowvec prop, int k);
+RcppExport SEXP _pGMCM_cmarg0_ll_gmm(SEXP zSEXP, SEXP muSEXP, SEXP SigmaSEXP, SEXP propSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type z(zSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type Sigma(SigmaSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type prop(propSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(cmarg0_ll_gmm(z, mu, Sigma, prop, k));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cll0_gmm
+double cll0_gmm(arma::mat& z, arma::mat mu, arma::cube Sigma, arma::rowvec prop, int k);
+RcppExport SEXP _pGMCM_cll0_gmm(SEXP zSEXP, SEXP muSEXP, SEXP SigmaSEXP, SEXP propSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type z(zSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type Sigma(SigmaSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type prop(propSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(cll0_gmm(z, mu, Sigma, prop, k));
+    return rcpp_result_gen;
+END_RCPP
+}
 // teststuff
 arma::colvec teststuff(arma::mat mu_old, arma::cube Sigma_old, arma::mat combos);
 RcppExport SEXP _pGMCM_teststuff(SEXP mu_oldSEXP, SEXP Sigma_oldSEXP, SEXP combosSEXP) {
@@ -359,6 +389,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_cduvnorm", (DL_FUNC) &_pGMCM_cduvnorm, 3},
     {"_pGMCM_cmarg_ll_gmm", (DL_FUNC) &_pGMCM_cmarg_ll_gmm, 6},
     {"_pGMCM_cll_gmm", (DL_FUNC) &_pGMCM_cll_gmm, 7},
+    {"_pGMCM_cmarg0_ll_gmm", (DL_FUNC) &_pGMCM_cmarg0_ll_gmm, 5},
+    {"_pGMCM_cll0_gmm", (DL_FUNC) &_pGMCM_cll0_gmm, 5},
     {"_pGMCM_teststuff", (DL_FUNC) &_pGMCM_teststuff, 3},
     {NULL, NULL, 0}
 };

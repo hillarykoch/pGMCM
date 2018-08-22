@@ -89,6 +89,14 @@ cll_gmm <- function(z, mu, sigma, rho, prop, combos, k) {
     .Call(`_pGMCM_cll_gmm`, z, mu, sigma, rho, prop, combos, k)
 }
 
+cmarg0_ll_gmm <- function(z, mu, Sigma, prop, k) {
+    .Call(`_pGMCM_cmarg0_ll_gmm`, z, mu, Sigma, prop, k)
+}
+
+cll0_gmm <- function(z, mu, Sigma, prop, k) {
+    .Call(`_pGMCM_cll0_gmm`, z, mu, Sigma, prop, k)
+}
+
 teststuff <- function(mu_old, Sigma_old, combos) {
     .Call(`_pGMCM_teststuff`, mu_old, Sigma_old, combos)
 }

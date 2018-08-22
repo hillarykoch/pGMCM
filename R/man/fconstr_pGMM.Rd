@@ -14,22 +14,24 @@ fconstr_pGMM(x, lambda = NULL, tol=1e-06, itermax = 300)
   \item{lambda}{Penalty parameter. If unspecified, a grid is automatically generated.}
   \item{tol}{Tolerance for the stopping rule for the EM algorithm. A lower tolerance will require more iterations. Defaults to 1e-06.}
   \item{itermax}{Maximum number of iterations of the EM algorithm to perform. Defaults to 300.}
-
 }
 \details{The model is fit using the expectation-maximization algorithm. Clusters are initialized using kmeans with 3^d clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}
 \value{
-\item{k}{Optimal number of clusters.}
-\item{prop}{Mixing proportions in each cluster.}
-\item{mu}{Cluster means.}
-\item{sigma}{Cluster variances.}
-\item{rho}{Correlation between replicates with association.}
-\item{df}{Degrees of freedom for each cluster.}
-\item{cluster}{Cluster labels for each of the n observations.}
-\item{BIC}{BIC of optimal fit.}
-\item{lambda}{Lambda of optimal fit.}
-\item{ll}{Log likelihood of the data given the optimal fit.}
+    \item{k}{Optimal number of clusters.}
+    \item{prop}{Mixing proportions in each cluster.}
+    \item{mu}{Cluster means.}
+    \item{sigma}{Cluster variances.}
+    \item{rho}{Correlation between replicates with association.}
+    \item{df}{Degrees of freedom for each cluster.}
+    \item{cluster}{Cluster labels for each of the n observations.}
+    \item{BIC}{BIC of optimal fit.}
+    \item{lambda}{Lambda of optimal fit.}
+    \item{ll}{Log likelihood of the data given the optimal fit.}
+    \item{post_prob}{Posterior probability of each observation arising from each cluster.}
+    \item{combos}{Used internally with fconstr_pGMCM. Can be ignored by the user.}
 }
 \author{\email{hbk5086@psu.edu}}
+\seealso{\link{fconstr_pGMCM}}
 \examples{
 library(mvtnorm)
 set.seed(234)
@@ -41,8 +43,10 @@ mu <- 4
 sigma <- 1.3
 rho <- 0.8
 sim <- rconstr_GMCM(n, prop, mu, sigma, rho, 2)
+fit <- fconstr_pGMM(sim$data, itermax = 100)
 
 par(mfrow = c(1,2))
 plot(sim$data, col = pal[sim$cluster], main = "observed")
-plot(sim$u, col = pal[sim$cluster], main = "copula")
+plot(sim$data, col = pal[fit$cluster], main = "GMM classification")
+
 }

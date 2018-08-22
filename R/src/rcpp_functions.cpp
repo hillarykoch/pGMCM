@@ -768,7 +768,7 @@ arma::colvec cduvnorm(arma::colvec x, double mu, double sigma){
     return exp(logretval);
 }
 
-// computing marginal likelihood of gmm (for copula likelihood)
+// computing marginal likelihood of constrained gmm (for copula likelihood)
 // [[Rcpp::export]]
 double cmarg_ll_gmm(arma::mat& z,
                     arma::mat mu,
@@ -815,6 +815,54 @@ double cll_gmm(arma::mat& z,
         pdf_est.col(i) = prop(i) * cdmvnorm(z, tmp_mu, tmp_sigma);
     }
 
+    return accu(log(sum(pdf_est,1)));
+}
+
+// computing marginal likelihood of LESS constrained (0) gmm (for copula likelihood)
+// [[Rcpp::export]]
+double cmarg0_ll_gmm(arma::mat& z,
+                    arma::mat mu,
+                    arma::cube Sigma,
+                    arma::rowvec prop,
+                    int k) {
+    const int n = z.n_rows;
+    const int d = z.n_cols;
+    arma::mat mll(n,d,arma::fill::none);
+    arma::mat pdf_est(n,k,arma::fill::none);
+    double tmp_sigma;
+    double tmp_mu;
+    arma::mat tmp_Sigma(d,d,arma::fill::none);
+
+    for(int i = 0; i < d; ++i){
+        for(int j = 0; j < k; ++j) {
+            tmp_mu = mu(j,i);
+            tmp_Sigma = Sigma.slice(j);
+            tmp_sigma = tmp_Sigma(i,i);
+            pdf_est.col(j) = prop(j) * cduvnorm(z.col(i), tmp_mu, tmp_sigma);
+        }
+        mll.col(i) = log(sum(pdf_est,1));
+    }
+    return accu(mll);
+}
+
+// computing joint likelihood of LESS constrained (0) gmm (for copula likelihood)
+// [[Rcpp::export]]
+double cll0_gmm(arma::mat& z,
+                arma::mat mu,
+                arma::cube Sigma,
+                arma::rowvec prop,
+                int k) {
+    const int n = z.n_rows;
+    const int d = z.n_cols;
+    arma::rowvec tmp_mu(d, arma::fill::none);
+    arma::mat tmp_sigma(d, d, arma::fill::none);
+    arma::mat pdf_est(n,k,arma::fill::none);
+
+    for(int i = 0; i < k; ++i) {
+        tmp_mu = mu.row(i);
+        tmp_sigma = Sigma.slice(i);
+        pdf_est.col(i) = prop(i) * cdmvnorm(z, tmp_mu, tmp_sigma);
+    }
     return accu(log(sum(pdf_est,1)));
 }
 
