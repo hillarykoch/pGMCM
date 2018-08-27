@@ -296,7 +296,7 @@ fpGMCM <- function(x, kmax, lambda=NULL, tol=1e-06, stepmax=50, itermax=200){
 # fit the constrained pGMCM
 fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
                           itermax=200, convCrit = c("GMCM", "GMM"),
-                          trace_params = FALSE){
+                          penaltyType = c("SCAD", "LASSO"), trace_params = FALSE){
     # x: a matrix of data with rows for observations and columns for features
     n <- nrow(x)   # sample size
     d <- ncol(x)   # dimension
@@ -304,10 +304,10 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
     # initialize with pGMM
     if(!is.null(lambda)){
         if(all(lambda == 0)){
-            init <- fconstr_pGMM(x, lambda = 0, tol=1e-04, itermax=200)
+            init <- fconstr_pGMM(x, lambda = 0, tol=1e-04, itermax=200, penaltyType = penaltyType)
         }
     } else{
-        init <- fconstr_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200)
+        init <- fconstr_pGMM(x, lambda = c(.1,0,1), tol=1e-04, itermax=200, penaltyType = penaltyType)
     }
     prop0 <- init$prop
     mu0 <- init$mu
@@ -352,7 +352,7 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
 
     for(stp in 2:(stepmax+1)){
         # estimation and model selection of penalized GMM for optimal lambda
-        temp_fit <- fconstr_pGMM(z, lambda = lambda, tol = tol, itermax = itermax)
+        temp_fit <- fconstr_pGMM(z, lambda = lambda, tol = tol, itermax = itermax, penaltyType = penaltyType)
 
         # make updates
         k <- temp_fit$k
@@ -398,7 +398,7 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
         if(delta < outer_tol){
             break
         }
-        if(stp > stepmax+1){
+        if(stp == stepmax+1){
             warning("Maximum number of steps reached before convergence.")
         }
     }
@@ -525,7 +525,7 @@ fconstr0_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200, c
         if(delta < outer_tol){
             break
         }
-        if(stp > stepmax+1){
+        if(stp == stepmax+1){
             warning("Maximum number of steps reached before convergence.")
         }
     }

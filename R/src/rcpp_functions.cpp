@@ -5,12 +5,85 @@
 using namespace Rcpp;
 using namespace RcppArmadillo;
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppNumerical)]]
 // [[Rcpp::plugins(cpp11)]]
 
 //
 // Stuff for general penalized Gaussian mixture model
 //
+
+// Made this so that absolute value of double returns double, not integer
+// [[Rcpp::export]]
+double abs3(double val){
+    return std::abs(val);
+}
+
+// First derivative of SCAD penalty
+// NOTE THAT THIS PENALTY LOOKS A LIL DIFFERENT THAN SCAD, BECAUSE HUANG PUTS LAMBDA OUTSIDE THE PENALIZATION TERM
+// [[Rcpp::export]]
+arma::rowvec SCAD_1d(arma::rowvec prop, double lambda, int k, double a = 3.7) {
+    arma::colvec term2(k, arma::fill::zeros);
+    arma::rowvec out(k, arma::fill::none);
+
+    for(int i = 0; i < k; ++i) {
+        if(a*lambda - prop(i) > 0) {
+            term2(i) = (a*lambda - prop(i))/(a*lambda-lambda);
+        }
+        out(i) = ((prop(i) <= lambda) + term2(i)*(prop(i) > lambda));
+    }
+    return out;
+}
+
+// First derivative of SCAD penalty, when only passing an integer and not a vector
+// NOTE THAT THIS PENALTY LOOKS A LIL DIFFERENT THAN SCAD, BECAUSE HUANG PUTS LAMBDA OUTSIDE THE PENALIZATION TERM
+// [[Rcpp::export]]
+double double_SCAD_1d(double prop, double lambda, double a = 3.7) {
+    double term2 = 0.0;
+    double out;
+
+    if(a*lambda - prop > 0) {
+        term2 = (a*lambda - prop)/(a*lambda-lambda);
+    }
+    out = ((prop <= lambda) + term2*(prop > lambda));
+    return out;
+}
+
+// SCAD penalty
+// NOTE THAT THIS PENALTY LOOKS A LIL DIFFERENT THAN SCAD, BECAUSE HUANG PUTS LAMBDA OUTSIDE THE PENALIZATION TERM
+// [[Rcpp::export]]
+arma::rowvec SCAD(arma::rowvec prop, double lambda, int k, double a = 3.7) {
+    arma::rowvec out(k, arma::fill::none);
+    double val;
+
+    for(int i = 0; i < k; ++i) {
+        val = abs3(prop(i));
+        if(val <= lambda) {
+            out(i) = lambda;
+        } else if(lambda < val & val <= a * lambda) {
+            out(i) = -((pow(val,2)-2*a*lambda*val+pow(lambda,2)) / (2 * (a-1) * lambda));
+        } else {
+            out(i) = ((a+1) * lambda) / 2;
+        }
+    }
+    return out;
+}
+
+// SCAD penalty, when only passing an integer and not a vector
+// NOTE THAT THIS PENALTY LOOKS A LIL DIFFERENT THAN SCAD, BECAUSE HUANG PUTS LAMBDA OUTSIDE THE PENALIZATION TERM
+// [[Rcpp::export]]
+double double_SCAD(double prop, double lambda, double a = 3.7) {
+    double out;
+    double val;
+
+    val = abs3(prop);
+    if(val <= lambda) {
+        out = lambda;
+    } else if(lambda < val & val <= a * lambda) {
+        out = -((pow(val,2)-2*a*lambda*val+pow(lambda,2)) / (2 * (a-1) * lambda));
+    } else {
+        out = ((a+1) * lambda) / 2;
+    }
+    return out;
+}
 
 // choose slices from a cube given index
 // [[Rcpp::export]]
@@ -31,7 +104,7 @@ arma::vec Mahalanobis(arma::mat x, arma::rowvec mu, arma::mat sigma){
     for (int i=0; i < n; i++) {
         x_cen.row(i) = x.row(i) - mu;
     }
-    return sum((x_cen*sigma.i()) % x_cen, 1);
+    return sum((x_cen* sigma.i()) % x_cen, 1);
 }
 
 // Compute density of multivariate normal
@@ -68,6 +141,7 @@ Rcpp::List cfpGMM(arma::mat& x,
     arma::mat pdf_est(n, k, arma::fill::none);
     arma::mat prob0(n, k, arma::fill::none);
     arma::mat h_est(n, k, arma::fill::none);
+    double thresh = 1/(log(n) * sqrt(n));
 
     for(int step = 0; step < citermax; ++step) {
         // E step
@@ -101,7 +175,7 @@ Rcpp::List cfpGMM(arma::mat& x,
         arma::rowvec prop_new(k, arma::fill::none);
         for(int i = 0; i < k; ++i){
             prop_new(i) = (sum(h_est.col(i)) - lambda * df) / (n-k*lambda*df) * 1.0L;
-            if(prop_new(i) < 1E-04) // tolerance greater than 0 for numerical stability (Huang2013)
+            if(prop_new(i) < thresh) // tolerance greater than 0 for numerical stability (Huang2013)
                 prop_new(i) = 0;
         }
         prop_new = prop_new/(sum(prop_new) * 1.0L);
@@ -161,12 +235,6 @@ Rcpp::List cfpGMM(arma::mat& x,
 //
 // Stuff for constrained penalized Gaussian mixture model
 //
-
-// Made this so that absolute value of double returns double, not integer
-// [[Rcpp::export]]
-double abs3(double val){
-    return std::abs(val);
-}
 
 // Calculate variance covariance matrix for constrained pGMM
 // [[Rcpp::export]]
@@ -246,16 +314,21 @@ arma::vec optim_rcpp(const arma::vec& init_val,
     Rcpp::Environment stats("package:stats");
     Rcpp::Function optim = stats["optim"];
 
-    Rcpp::List opt = optim(Rcpp::_["par"] = init_val,
-                           Rcpp::_["fn"] = Rcpp::InternalFunction(&func_to_optim),
-                           Rcpp::_["method"] = "Nelder-Mead",
-                           Rcpp::_["x"] = x,
-                           Rcpp::_["h_est"] = h_est,
-                           Rcpp::_["combos"] = combos);
+    try{
+        Rcpp::List opt = optim(Rcpp::_["par"] = init_val,
+                               Rcpp::_["fn"] = Rcpp::InternalFunction(&func_to_optim),
+                               Rcpp::_["method"] = "Nelder-Mead",
+                               Rcpp::_["x"] = x,
+                               Rcpp::_["h_est"] = h_est,
+                               Rcpp::_["combos"] = combos);
+        arma::vec mles = Rcpp::as<arma::vec>(opt["par"]);
 
-    arma::vec mles = Rcpp::as<arma::vec>(opt["par"]);
-
-    return mles;
+        return mles;
+    }
+    catch(...){
+        arma::colvec err = { NA_REAL, NA_REAL, NA_REAL };
+        return err;
+    }
 }
 
 // estimation and model selection of constrained penalized GMM
@@ -270,12 +343,14 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
                          arma::rowvec df,
                          int lambda,
                          int citermax,
-                         double tol) {
+                         double tol,
+                         unsigned int LASSO) {
 
     const int n = x.n_rows;
     const int d = x.n_cols;
     double delta = 1;
     arma::rowvec prop_old = prop;
+    arma::rowvec prop_new;
     arma::mat mu_old = mu;
     arma::mat sigma_old = sigma;
     double rho_old = rho;
@@ -284,6 +359,9 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
     arma::mat prob0(n, k, arma::fill::none);
     arma::mat tmp_sigma(d,d,arma::fill::none);
     arma::mat h_est(n, k, arma::fill::none);
+    double term; // for SCAD
+    arma::colvec err_test =  { NA_REAL };
+    double thresh = 1/ (log(n) * sqrt(n)); // for eliminating clusters
 
     for(int step = 0; step < citermax; ++step) {
         // E step
@@ -291,8 +369,14 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
             arma::rowvec tmp_mu = mu_old.row(i);
             tmp_sigma = cget_constr_sigma(sigma_old.row(i), rho_old, combos.row(i), d);
 
-            pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
-            prob0.col(i) = pdf_est.col(i) * prop_old(i);
+            try {
+                pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
+                prob0.col(i) = pdf_est.col(i) * prop_old(i);
+            }
+            catch(...){
+                arma::colvec err = { NA_REAL, NA_REAL, NA_REAL };
+                return Rcpp::List::create(Rcpp::Named("optim_err") = NA_REAL);
+            }
         }
 
         h_est.set_size(n, k);
@@ -314,18 +398,34 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
         arma::colvec param_new(3, arma::fill::none);
         param_new = optim_rcpp(init_val, x, h_est, combos);
 
+        if(param_new(0) == err_test(0)) {
+            return Rcpp::List::create(Rcpp::Named("optim_err") = NA_REAL);
+        }
+
         // transform sigma, rho back
         param_new(1) = exp(param_new(1));
         param_new(2) = trans_rho_inv(param_new(2));
 
-        // update proportion
-        arma::rowvec prop_new(k, arma::fill::none);
-        for(int i = 0; i < k; ++i){
-            prop_new(i) = (sum(h_est.col(i)) - lambda * df(i)) / (n-lambda*sum(df)) * 1.0L;
-            if(prop_new(i) < 1E-04) // tolerance greater than 0 for numerical stability (Huang2013)
-                prop_new(i) = 0;
+        prop_new.set_size(k);
+        if(LASSO == 1) {
+            // update proportion via LASSO penalty
+            for(int i = 0; i < k; ++i){
+                prop_new(i) = (sum(h_est.col(i)) - lambda * df(i)) / (n-lambda*sum(df)) * 1.0L;
+                if(prop_new(i) < thresh) // tolerance greater than 0 for numerical stability (Huang2013)
+                    prop_new(i) = 0;
+            }
+        } else {
+            // proportion update via SCAD penalty
+            term = accu((SCAD_1d(prop, lambda, k) % prop_old) % (1 / (1E-06 + SCAD(prop, lambda, k))));
+            for(int i = 0; i < k; ++i) {
+                prop_new(i) = sum(h_est.col(i)) /
+                    (n - (double_SCAD_1d(prop_old(i), lambda) / (1E-06 + double_SCAD(prop_old(i), lambda)) +
+                    term) * lambda * df(i)) * 1.0L;
+                if(prop_new(i) < thresh) // tolerance greater than 0 for numerical stability (Huang2013)
+                    prop_new(i) = 0;
+            }
         }
-        prop_new = prop_new/(sum(prop_new) * 1.0L);
+        prop_new = prop_new/(sum(prop_new) * 1.0L); // renormalize weights
 
         // calculate difference between two iterations
         delta = sum(abs(prop_new - prop_old));
@@ -615,6 +715,7 @@ Rcpp::List cfconstr0_pGMM(arma::mat& x,
     arma::colvec param_new;
     arma::rowvec tmp_mu(d, arma::fill::none);
     arma::rowvec prop_new;
+    double thresh = 1/(log(n) * sqrt(n));
 
     for(int step = 0; step < citermax; ++step) {
         // E step
@@ -701,7 +802,7 @@ Rcpp::List cfconstr0_pGMM(arma::mat& x,
         prop_new.set_size(k);
         for(int i = 0; i < k; ++i){
             prop_new(i) = (sum(h_est.col(i)) - lambda * df(i)) / (n-lambda*sum(df)) * 1.0L;
-            if(prop_new(i) < 1E-04) // tolerance greater than 0 for numerical stability (Huang2013)
+            if(prop_new(i) < thresh) // tolerance greater than 0 for numerical stability (Huang2013)
                 prop_new(i) = 0;
         }
         prop_new = prop_new/(sum(prop_new) * 1.0L);
@@ -867,7 +968,6 @@ double cll0_gmm(arma::mat& z,
 }
 
 // test stuff
-// [[Rcpp::export]]
 arma::colvec teststuff(arma::mat mu_old, arma::cube Sigma_old, arma::mat combos) {
     arma::colvec sgn_mu_in = get_mu_optim(mu_old, combos);
     arma::uvec negidx = find(sgn_mu_in < 0);

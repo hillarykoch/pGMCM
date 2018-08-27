@@ -91,7 +91,7 @@ fpGMM <- function(x, kmax, lambda=NULL, tol = 1e-06, itermax = 200){
 
 
 # choose the corresponding lambda of max BIC in constrained penalized GMM and get best estimates
-fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
+fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200, penaltyType = c("SCAD", "LASSO")){
     # x: a matrix of data with rows for observations and columns for features
     # kmax: max number of clusters
     # lambda: a parameter of penalty term
@@ -148,6 +148,7 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
         mu0 <- mu0[idx, ]
         sigma0 <- sigma0[idx,]
         df <- df[idx]
+        combos <- combos[idx,]
     }
 
     bestBIC <- -Inf
@@ -157,19 +158,24 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
         x <- as.matrix(x)
     }
 
-
+    LASSO <- ifelse(all(penaltyType == "LASSO"), 1, 0)
     for(i in seq_along(lambda)){
         # estimate penalized GMM for a given lambda
-        curGMM <- cfconstr_pGMM(x=x, prop=prop0, mu = mu0,
-                                sigma = sigma0, rho = rho0,
-                                combos = combos,
-                                k = kmax, df = df,
-                                lambda = lambda[i],
-                                citermax = itermax, tol = tol)
+        curGMM <- suppressMessages(cfconstr_pGMM(x=x, prop=prop0, mu = mu0,
+                                                 sigma = sigma0, rho = rho0,
+                                                 combos = combos,
+                                                 k = kmax, df = df,
+                                                 lambda = lambda[i],
+                                                 citermax = itermax, tol = tol,
+                                                 LASSO = LASSO))
 
-        ll_temp <- curGMM$ll
-        df_temp <- curGMM$df
-        BIC  <- sum(ll_temp)-sum(df_temp)*log(n)/2
+        if(!any(names(curGMM) == "optim_err")) {
+            ll_temp <- curGMM$ll
+            df_temp <- curGMM$df
+            BIC  <- sum(ll_temp)-sum(df_temp)*log(n)/2
+        } else{
+            BIC <- -Inf
+        }
 
         # update parameters
         if (bestBIC < BIC){
@@ -184,14 +190,14 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200){
             bestlam <- lambda[i]
             ll_out <- ll_temp
             post_prob <- curGMM$post_prob
-            combos <- curGMM$combos
+            combos_out <- curGMM$combos
         }
     }
 
     list("k" = k_out, "prop" = prop_out, "mu" = mu_out, "sigma" = sigma_out,
          "rho" = rho_out, "df" = df_out, "cluster" = cl_out, "BIC" = bestBIC,
          "lambda" = bestlam, "ll" = ll_out, "post_prob" = post_prob,
-         "combos" = combos)
+         "combos" = combos_out)
 }
 
 # choose the corresponding lambda of max BIC in constrained penalized GMM and get best estimates

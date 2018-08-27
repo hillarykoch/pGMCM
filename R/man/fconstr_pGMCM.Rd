@@ -7,7 +7,7 @@ Fit constrained penalized Gaussian copula mixture model
 For a given maximum number of clusters in the data, find the optimal penalization parameter lambda and the optimal clustering. Lambda penalizes the mixing proportions. Model optimality is determined by best BIC. The constraints here are that, for any number of replicates, there are 3 components h = {-1,0,1}. h=0 implies no associations, while 1 and -1 imply positive and negative associations. The mean of the no association component is restricted to 0, while the positive and negative associations have mean mu and -mu. The standard deviation of the no association component is restricted to 1, while the positive and negative associations have standard deviation sigma. For two replicates where both have positive association or both have negative association, they have correlation rho. For two replicates, one with positive association and one with negative association, they have correlation -rho. Otherwise, correlation between replicates is restricted to 0.
 }
 \usage{
-fconstr_pGMCM(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200. convCrit = c("GMCM", "GMM"))
+fconstr_pGMCM(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200. convCrit = c("GMCM", "GMM"), penaltyType = c("SCAD", "LASSO"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,6 +17,7 @@ fconstr_pGMCM(x, lambda=NULL, tol=1e-06, stepmax=50, itermax=200. convCrit = c("
   \item{stepmax}{Maximum number of updates from the copula process. Defaults to 50.}
   \item{itermax}{Maximum number of iterations of the EM algorithm to perform in the pGMM on the latent process. Defaults to 200.}
   \item{convCrit}{Character string specifying which convergence criterion to use in the pseudo-EM algorithm. If "GMCM", the algorithm stops when the difference in copula likelihoods between two consecutive steps is less than 1e-4. If "GMM", the algorithm stops when the difference between the maximum GMM likelihood betweem two consecutive steps is less than 1e-4. Note that in both cases, the maximum likelihood fit is not necessarily the final step.}
+  \item{penaltyType}{Character string specifying which term to use to penalize the cluster mixing proportions. Defaults to SCAD.}
   \item{trace_params}{Logical. Should a trace of parameters, output from each best pGMM at each step, be output? Defaults to false.}
 }
 \details{The model is fit using a modified expectation-maximization algorithm. Clusters are initialized using a restricted GMM with 3^d clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}
