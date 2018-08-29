@@ -1,4 +1,6 @@
 R/R/_*
+*.o
+*.so
 .Rproj.user
 .Rhistory
 .RData
