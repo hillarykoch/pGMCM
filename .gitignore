@@ -1,0 +1,11 @@
+R/R/_*
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rproj
+R/src/testRcpp.cpp
+R/src/testRcpp.o
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
