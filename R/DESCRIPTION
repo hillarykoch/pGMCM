@@ -16,10 +16,7 @@ Imports:
     plyr,
     purrr,
     Rcpp (>= 0.12.16),
-    RcppNumerical,
     stats
 LinkingTo:
     Rcpp,
-    RcppArmadillo,
-    RcppEigen,
-    RcppNumerical
+    RcppArmadillo
