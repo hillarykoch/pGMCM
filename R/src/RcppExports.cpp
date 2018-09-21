@@ -6,6 +6,29 @@
 
 using namespace Rcpp;
 
+// cgetPaths
+arma::mat cgetPaths(std::string filepath);
+RcppExport SEXP _pGMCM_cgetPaths(SEXP filepathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type filepath(filepathSEXP);
+    rcpp_result_gen = Rcpp::wrap(cgetPaths(filepath));
+    return rcpp_result_gen;
+END_RCPP
+}
+// crowMatch
+arma::uvec crowMatch(arma::mat assoc, arma::mat nonconsec);
+RcppExport SEXP _pGMCM_crowMatch(SEXP assocSEXP, SEXP nonconsecSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type assoc(assocSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type nonconsec(nonconsecSEXP);
+    rcpp_result_gen = Rcpp::wrap(crowMatch(assoc, nonconsec));
+    return rcpp_result_gen;
+END_RCPP
+}
 // abs3
 double abs3(double val);
 RcppExport SEXP _pGMCM_abs3(SEXP valSEXP) {
@@ -408,6 +431,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_pGMCM_cgetPaths", (DL_FUNC) &_pGMCM_cgetPaths, 1},
+    {"_pGMCM_crowMatch", (DL_FUNC) &_pGMCM_crowMatch, 2},
     {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_SCAD_1d", (DL_FUNC) &_pGMCM_SCAD_1d, 4},
     {"_pGMCM_double_SCAD_1d", (DL_FUNC) &_pGMCM_double_SCAD_1d, 3},

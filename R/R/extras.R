@@ -161,13 +161,13 @@ fconstr_pGMM <- function(x, lambda=NULL, tol = 1e-06, itermax = 200, penaltyType
     LASSO <- ifelse(all(penaltyType == "LASSO"), 1, 0)
     for(i in seq_along(lambda)){
         # estimate penalized GMM for a given lambda
-        curGMM <- suppressMessages(cfconstr_pGMM(x=x, prop=prop0, mu = mu0,
-                                                 sigma = sigma0, rho = rho0,
-                                                 combos = combos,
-                                                 k = kmax, df = df,
-                                                 lambda = lambda[i],
-                                                 citermax = itermax, tol = tol,
-                                                 LASSO = LASSO))
+        curGMM <- cfconstr_pGMM(x=x, prop=prop0, mu = mu0,
+                                sigma = sigma0, rho = rho0,
+                                combos = combos,
+                                k = kmax, df = df,
+                                lambda = lambda[i],
+                                citermax = itermax, tol = tol,
+                                LASSO = LASSO)
 
         if(!any(names(curGMM) == "optim_err")) {
             ll_temp <- curGMM$ll

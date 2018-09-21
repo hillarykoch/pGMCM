@@ -15,7 +15,7 @@ fpGMM(x, kmax, lambda = NULL, tol=1e-06, itermax = 200)
   \item{lambda}{Penalty parameter. If unspecified, a grid is automatically generated.}
   \item{tol}{Tolerance for the stopping rule for the EM algorithm. A lower tolerance will require more iterations. Defaults to 1e-06.}
   \item{itermax}{Maximum number of iterations of the EM algorithm to perform. Defaults to 200.}
-  
+
 }
 \details{The model is fit using the expectation-maximization algorithm. Clusters are initialized using kmeans with kmax clusters. Initial values of mixing proportions, means, and variance (covariance) matrices for EM are computed from these clusters.}
 \value{
@@ -39,12 +39,15 @@ sim <- rbind(rmvnorm(500, mean = c(-1,0),
                 sigma = matrix(c(2.25,.1,.1,.65), nrow = 2, byrow = T)),
          rmvnorm(100, mean = c(4,2),
                 sigma = matrix(c(1,.5,.5,1), nrow = 2, byrow = T)))
-fit <- fpGMM(sim, lambda = 1, kmax = 10)
 
-par(mfrow = c(1,2))
-plot(sim, col = pal[rep(1:3,times = c(500, 500, 100))], pch = 16, cex = 0.75,
-    xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
-plot(sim, col = pal[fit$cluster], pch = 16, cex = 0.75,
-    xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters")
-
+################################################################################
+# Not run:
+# fit <- fpGMM(sim, lambda = 1, kmax = 10)
+#
+# par(mfrow = c(1,2))
+# plot(sim, col = pal[rep(1:3,times = c(500, 500, 100))], pch = 16, cex = 0.75,
+#     xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
+# plot(sim, col = pal[fit$cluster], pch = 16, cex = 0.75,
+#     xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters")
+################################################################################
 }

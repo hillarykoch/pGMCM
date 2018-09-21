@@ -45,11 +45,15 @@ sigma <- list(rbind(c(0.65, 0.7794), c(0.7794, 1.55)),
                  diag(c(2, 0.2)))
 
 sim <- rGMCM(n, prop, mu, sigma)
-fit <- fpGMCM(sim$data, kmax = 10)
 
-par(mfrow = c(1,2))
-plot(sim$data, col = rev(pal)[sim$cluster], pch = 16, cex = 0.75,
-    xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
-plot(sim$data, col = rev(pal)[fit$cluster], pch = 16, cex = 0.75,
-    xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters")
+################################################################################
+# Not run:
+# fit <- fpGMCM(sim$data, kmax = 10)
+#
+# par(mfrow = c(1,2))
+# plot(sim$data, col = rev(pal)[sim$cluster], pch = 16, cex = 0.75,
+#    xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
+# plot(sim$data, col = rev(pal)[fit$cluster], pch = 16, cex = 0.75,
+#    xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters")
+################################################################################
 }

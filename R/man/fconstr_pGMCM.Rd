@@ -44,15 +44,18 @@ pal <- sample(get_pals(4), 9, replace = FALSE)
 sim <- rconstr_GMCM(900, prop = rep(1/9,9),
                     mu = 4, sigma = 0.9, rho = 0.6, d = 2)
 
-# Fit with 2 different convergence criteria
-fit1 <- fconstr_pGMCM(sim$data, tol = 1e-03, stepmax = 25, itermax = 50, convCrit = "GMCM")
-fit2 <- fconstr_pGMCM(sim$data, tol = 1e-03, stepmax = 25, itermax = 50, convCrit = "GMM")
-
-par(mfrow = c(1,3))
-plot(sim$data, col = pal[sim$cluster], pch = 16, cex = 0.75,
-    xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
-plot(sim$data, col = pal[fit1$cluster], pch = 16, cex = 1,
-    xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters 1")
-plot(sim$data, col = pal[fit2$cluster], pch = 16, cex = 1,
-    xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters 2")
+################################################################################
+# Not run:
+# # Fit with 2 different convergence criteria
+# fit1 <- fconstr_pGMCM(sim$data, tol = 1e-03, stepmax = 25, itermax = 50, convCrit = "GMCM")
+# fit2 <- fconstr_pGMCM(sim$data, tol = 1e-03, stepmax = 25, itermax = 50, convCrit = "GMM")
+#
+#par(mfrow = c(1,3))
+# plot(sim$data, col = pal[sim$cluster], pch = 16, cex = 0.75,
+#     xlab = expression(x[1]), ylab = expression(x[2]), main = "true clusters")
+# plot(sim$data, col = pal[fit1$cluster], pch = 16, cex = 1,
+#     xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters 1")
+# plot(sim$data, col = pal[fit2$cluster], pch = 16, cex = 1,
+#     xlab = expression(x[1]), ylab = expression(x[2]), main = "fitted clusters 2")
+################################################################################
 }

@@ -45,10 +45,13 @@ mu <- 4
 sigma <- 1.3
 rho <- 0.8
 sim <- rconstr_GMCM(n, prop, mu, sigma, rho, 2)
-fit <- fconstr_pGMM(sim$data, itermax = 100)
 
-par(mfrow = c(1,2))
-plot(sim$data, col = pal[sim$cluster], main = "observed")
-plot(sim$data, col = pal[fit$cluster], main = "GMM classification")
-
+################################################################################
+# Not run:
+# fit <- fconstr_pGMM(sim$data, itermax = 100)
+#
+# par(mfrow = c(1,2))
+# plot(sim$data, col = pal[sim$cluster], main = "observed")
+# plot(sim$data, col = pal[fit$cluster], main = "GMM classification")
+################################################################################
 }
