@@ -62,7 +62,7 @@ arma::mat cgetPaths(std::string filepath) {
 	// need to write this function
 	num_paths = (all_paths.size())/(d+2);
 	arma::mat out(d+2, num_paths, arma::fill::none);
-	for(int i = 0; i < all_paths.size(); i++) {
+	for(auto i = 0; i < all_paths.size(); i++) {
 	    out(i) = all_paths[i];
 	}
 	return out.t();

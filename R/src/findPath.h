@@ -78,7 +78,7 @@ void findPath(ListDigraph& gr,
                 }
                 sort(temp.begin(), temp.end());
 
-                for(int i = 0; i < temp.size(); i++)
+                for(auto i = 0; i < temp.size(); i++)
                 {
                     all_paths.push_back(temp[i]);
                     for(ListDigraph::NodeIt n(gr); n != INVALID; ++n)

@@ -133,7 +133,7 @@ associate <- function(paths, filepath, filt_h) {
         file = filepath,
         skip = 1,
         col_names = TRUE,
-        n_max = length(unlist(filt)) + 2
+        n_max = length(unlist(filt_h)) + 2
     )
 
     assoc_mx <-
@@ -145,7 +145,7 @@ associate <- function(paths, filepath, filt_h) {
 prune_paths <- function(h, assoc_mx) {
     nonconsec <- get_consecutive(h, non_consec = TRUE)
     labs <- names(nonconsec)
-    keepers <- matrix(0, nrow = nrow(assoc), ncol = length(nonconsec))
+    keepers <- matrix(0, nrow = nrow(assoc_mx), ncol = length(nonconsec))
 
     for (i in seq_along(nonconsec)) {
         pair <- strsplit(labs[i], split = "_") %>%
@@ -165,6 +165,6 @@ get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
     filt <- filter_h(h, d)
     write_LGF(h, d, filepath)
     paths <- get_paths(filepath)
-    assoc <- associate(paths, filepath, filt)
+    assoc <- associate(paths, filepath, filt_h = filt)
     prune_paths(h, assoc)
 }
