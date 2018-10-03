@@ -29,6 +29,65 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_list_names
+std::vector<std::string> get_list_names(Rcpp::List L);
+RcppExport SEXP _pGMCM_get_list_names(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type L(LSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_list_names(L));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpaste0
+std::string cpaste0(std::vector<std::string> str1);
+RcppExport SEXP _pGMCM_cpaste0(SEXP str1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type str1(str1SEXP);
+    rcpp_result_gen = Rcpp::wrap(cpaste0(str1));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cstr_split
+arma::mat cstr_split(std::vector<std::string> strings, std::string split);
+RcppExport SEXP _pGMCM_cstr_split(SEXP stringsSEXP, SEXP splitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type strings(stringsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type split(splitSEXP);
+    rcpp_result_gen = Rcpp::wrap(cstr_split(strings, split));
+    return rcpp_result_gen;
+END_RCPP
+}
+// trans_func
+int trans_func(double& x);
+RcppExport SEXP _pGMCM_trans_func(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(trans_func(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cget_prior_prop
+arma::colvec cget_prior_prop(arma::mat red_class, Rcpp::List mus, Rcpp::List props, int d);
+RcppExport SEXP _pGMCM_cget_prior_prop(SEXP red_classSEXP, SEXP musSEXP, SEXP propsSEXP, SEXP dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type mus(musSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type props(propsSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(cget_prior_prop(red_class, mus, props, d));
+    return rcpp_result_gen;
+END_RCPP
+}
 // abs3
 double abs3(double val);
 RcppExport SEXP _pGMCM_abs3(SEXP valSEXP) {
@@ -433,6 +492,11 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_cgetPaths", (DL_FUNC) &_pGMCM_cgetPaths, 1},
     {"_pGMCM_crowMatch", (DL_FUNC) &_pGMCM_crowMatch, 2},
+    {"_pGMCM_get_list_names", (DL_FUNC) &_pGMCM_get_list_names, 1},
+    {"_pGMCM_cpaste0", (DL_FUNC) &_pGMCM_cpaste0, 1},
+    {"_pGMCM_cstr_split", (DL_FUNC) &_pGMCM_cstr_split, 2},
+    {"_pGMCM_trans_func", (DL_FUNC) &_pGMCM_trans_func, 1},
+    {"_pGMCM_cget_prior_prop", (DL_FUNC) &_pGMCM_cget_prior_prop, 4},
     {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_SCAD_1d", (DL_FUNC) &_pGMCM_SCAD_1d, 4},
     {"_pGMCM_double_SCAD_1d", (DL_FUNC) &_pGMCM_double_SCAD_1d, 3},

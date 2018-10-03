@@ -405,7 +405,7 @@ fconstr_pGMCM <- function(x, lambda=NULL, tol=1e-06, stepmax=50,
     best_stp <- which.max(ll.tr["gmcm_ll",])
 
     out <- param.tr[[best_stp]]
-    out$ll_gmcm <- ll.tr["gmcm_ll",best_stp]
+    out$ll_gmcm <- ll.tr["gmcm_ll", best_stp]
 
     if(trace_params){
         out$trace <- param.tr

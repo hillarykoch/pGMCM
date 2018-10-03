@@ -9,6 +9,26 @@ crowMatch <- function(assoc, nonconsec) {
     .Call(`_pGMCM_crowMatch`, assoc, nonconsec)
 }
 
+get_list_names <- function(L) {
+    .Call(`_pGMCM_get_list_names`, L)
+}
+
+cpaste0 <- function(str1) {
+    .Call(`_pGMCM_cpaste0`, str1)
+}
+
+cstr_split <- function(strings, split) {
+    .Call(`_pGMCM_cstr_split`, strings, split)
+}
+
+trans_func <- function(x) {
+    .Call(`_pGMCM_trans_func`, x)
+}
+
+cget_prior_prop <- function(red_class, mus, props, d) {
+    .Call(`_pGMCM_cget_prior_prop`, red_class, mus, props, d)
+}
+
 abs3 <- function(val) {
     .Call(`_pGMCM_abs3`, val)
 }

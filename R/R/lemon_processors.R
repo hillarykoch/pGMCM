@@ -58,10 +58,10 @@ write_LGF <- function(h, d, path) {
                 rep(X, times = dims[[X]])) %>% unlist, d + 1),
             "assoc" = c(0, unlist(filt_h), 0)
         )
-    write_tsv(data.frame("@nodes"),
+    readr::write_tsv(data.frame("@nodes"),
               path = path,
               col_names = FALSE)
-    write_tsv(node,
+    readr::write_tsv(node,
               path = path,
               col_names = TRUE,
               append = TRUE)
@@ -90,14 +90,14 @@ write_LGF <- function(h, d, path) {
                      abind(trg),
                      rep(3 * d + 1, length(targets)))
     )
-    write_tsv(
+    readr::write_tsv(
         data.frame("@arcs"),
         path = path,
         col_names = FALSE,
         append = TRUE
     )
     cat("\t\t -\n", file = path, append = TRUE)
-    write_tsv(
+    readr::write_tsv(
         arcs,
         path = path,
         col_names = FALSE,
@@ -107,7 +107,7 @@ write_LGF <- function(h, d, path) {
 
     # Make attributes section of LGF file to note the sources
     cat("\n", file = path, append = TRUE)
-    write_tsv(
+    readr::write_tsv(
         data.frame("@attributes"),
         path = path,
         col_names = FALSE,
@@ -115,7 +115,7 @@ write_LGF <- function(h, d, path) {
     )
     attrib <- data.frame("type" = c("source", "target"),
                          "label" = c(0, 3 * d + 1))
-    write_tsv(attrib,
+    readr::write_tsv(attrib,
               path = path,
               col_names = FALSE,
               append = TRUE)
@@ -167,4 +167,11 @@ get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
     paths <- get_paths(filepath)
     assoc <- associate(paths, filepath, filt_h = filt)
     prune_paths(h, assoc)
+}
+
+# Get expected value of prior probability on full mixing proportions
+get_prior_prop <- function(fits, red_class, d) {
+    mus <- purrr::map(fits, "mu")
+    props <- purrr::map(fits, "prop")
+    cget_prior_prop(red_class, mus, props, d)
 }

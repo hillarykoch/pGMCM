@@ -15,6 +15,7 @@ Imports:
     mvtnorm,
     plyr,
     purrr,
+    readr,
     Rcpp (>= 0.12.16),
     stats
 LinkingTo:
