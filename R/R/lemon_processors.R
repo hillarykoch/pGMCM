@@ -168,10 +168,3 @@ get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
     assoc <- associate(paths, filepath, filt_h = filt)
     prune_paths(h, assoc)
 }
-
-# Get expected value of prior probability on full mixing proportions
-get_prior_prop <- function(fits, red_class, d) {
-    mus <- purrr::map(fits, "mu")
-    props <- purrr::map(fits, "prop")
-    cget_prior_prop(red_class, mus, props, d)
-}

@@ -11,8 +11,11 @@ LazyData: true
 Imports:
     abind,
     dplyr,
+    LaplacesDemon,
     magrittr,
+    MCMCpack,
     mvtnorm,
+    nimble,
     plyr,
     purrr,
     readr,
