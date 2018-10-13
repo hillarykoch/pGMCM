@@ -42,7 +42,7 @@ rGMCM <- function(n, prop, mu, sigma){
 }
 
 # generate data for constrained version of GMCM
-rconstr_GMCM <- function(n, prop, mu, sigma, rho, d){
+rconstr_GMCM <- function(n, prop, mu, sigma, rho, d, combos = NULL){
     # n: sample size
     # prop: mixing proportion of each cluster
     # d: dimension of data (number of replicates)
@@ -52,10 +52,12 @@ rconstr_GMCM <- function(n, prop, mu, sigma, rho, d){
     # d: number of replicates
     # k: number of clusters
 
-    # Generate all combinations of replication, given in any order
-    combos <- expand.grid(rep(list(-1:1),d)) %>% as.matrix
-    k <- nrow(combos)
+    if(is.null(combos)){
+        # Generate all combinations of replication, given in any order
+        combos <- expand.grid(rep(list(-1:1),d)) %>% as.matrix
+    }
 
+    k <- nrow(combos)
     if(k != length(prop)){
         stop("length(prop) must be equal to total number of clusters.")
     }
@@ -121,12 +123,12 @@ rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d){
     # k: number of clusters
 
     # Generate all combinations of replication, given in any order
-    combos <- expand.grid(rep(list(-1:1),d))
+    combos <- expand.grid(rep(list(-1:1),d)) %>% as.matrix
     k <- nrow(combos)
-
     if(k != length(prop)){
         stop("length(prop) must be equal to total number of clusters.")
     }
+
     if(length(mu) != 2){
         stop("length(mu) must equal 2.")
     }
@@ -203,6 +205,25 @@ rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d){
         setNames(sapply(seq(d), function(X) paste0("z.", X)))
 
     list("data" = y, "u" = u, "z" = z, "cluster" = tag)
+}
+
+r_assoc <- function(d, num_patterns) {
+    combos <- matrix(rep(NA, d*num_patterns),
+                     nrow = num_patterns,
+                     ncol = d)
+
+    # Always have the all 0 pattern
+    combos[1,] <- rep(0, d)
+
+    count <- 2
+    while(any(is.na(combos[num_patterns,]))) {
+        assoc <- sample(-1:1, replace = TRUE, size = d)
+        if(!any(apply(combos, 1, function(X) all(X == assoc)), na.rm = TRUE)) {
+            combos[count, ] <- assoc
+            count <- count + 1
+        }
+    }
+    combos
 }
 
 
