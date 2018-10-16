@@ -37,6 +37,10 @@ cget_prior_count <- function(red_class, mus, labels, d, n, dist_tol = 0L) {
     .Call(`_pGMCM_cget_prior_count`, red_class, mus, labels, d, n, dist_tol)
 }
 
+cget_true_assoc_idx <- function(red_class, true_assoc) {
+    .Call(`_pGMCM_cget_true_assoc_idx`, red_class, true_assoc)
+}
+
 abs3 <- function(val) {
     .Call(`_pGMCM_abs3`, val)
 }

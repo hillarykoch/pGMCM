@@ -116,6 +116,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cget_true_assoc_idx
+arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc);
+RcppExport SEXP _pGMCM_cget_true_assoc_idx(SEXP red_classSEXP, SEXP true_assocSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type true_assoc(true_assocSEXP);
+    rcpp_result_gen = Rcpp::wrap(cget_true_assoc_idx(red_class, true_assoc));
+    return rcpp_result_gen;
+END_RCPP
+}
 // abs3
 double abs3(double val);
 RcppExport SEXP _pGMCM_abs3(SEXP valSEXP) {
@@ -527,6 +539,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_cget_prior_prop", (DL_FUNC) &_pGMCM_cget_prior_prop, 4},
     {"_pGMCM_caccept", (DL_FUNC) &_pGMCM_caccept, 2},
     {"_pGMCM_cget_prior_count", (DL_FUNC) &_pGMCM_cget_prior_count, 6},
+    {"_pGMCM_cget_true_assoc_idx", (DL_FUNC) &_pGMCM_cget_true_assoc_idx, 2},
     {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_SCAD_1d", (DL_FUNC) &_pGMCM_SCAD_1d, 4},
     {"_pGMCM_double_SCAD_1d", (DL_FUNC) &_pGMCM_double_SCAD_1d, 3},

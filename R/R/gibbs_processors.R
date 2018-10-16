@@ -131,6 +131,7 @@ label_traceplot <- function(param.tr, obs_num, ...) {
          ...)
 }
 
+# Which cluster label is most frequent for each observation
 get_consensus_labels <- function(param.tr) {
     zees <- purrr::map(param.tr, "z") %>%
         abind(along = 2) %>%
@@ -142,6 +143,7 @@ get_consensus_labels <- function(param.tr) {
     purrr::map2(.x = vals, .y = maxidx, `[`) %>% unlist
 }
 
+# Match labels so that direct comparisons of results to truth can be made
 relabel <- function(consensus_labels, red_class, true_assoc) {
     reorders <- rep(NA, nrow(red_class))
 

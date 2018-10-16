@@ -5,7 +5,7 @@
 get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0){
     mus <- map(fits, "mu")
     labels <- map(fits, "cluster") %>% simplify2array
-    
+
     prior_count <- cget_prior_count(red_class, mus, labels, d, n, dist_tol)
     (prior_count/n)/(sum(prior_count/n))
 }
@@ -52,7 +52,7 @@ get_hyperparams <- function(fits, d, red_class) {
         mu0_temp[i] <- mean(muvec)
         Psi0_temp[i,i] <- mean(sigmavec) # This covariance probably isnt correct
     }
-    
+
     for(i in seq(nrow(spl))) {
         # This covariance probably isnt correct
         Psi0_temp[spl[i,1], spl[i,2]] <- Psi0_temp[spl[i,2], spl[i,1]] <- rhos[[i]]
@@ -128,7 +128,7 @@ draw_NIW <- function(x, hyp, z) {
 
 updatez <- function(data, NIW) {
     d <- sapply(seq_along(NIW),
-                function(X) mvtnorm::dmvnorm(sim$data,
+                function(X) mvtnorm::dmvnorm(data,
                                              mean = NIW[[X]]$mu,
                                              sigma = NIW[[X]]$Sigma))
     apply(d, 1, which.max)
