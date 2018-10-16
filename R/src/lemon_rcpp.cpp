@@ -247,7 +247,75 @@ arma::colvec cget_prior_prop(arma::mat red_class,
     return prob;
 }
 
-//// test stuff
-//arma::mat ctest(Rcpp::List mus) {
-//    return mus[0];
-//}
+// Find which row in a matrix equals some vector
+// [[Rcpp::export]]
+arma::vec caccept(arma::mat x, arma::colvec y){
+    int b = x.n_rows;
+    arma::vec out(b, arma::fill::none);
+    
+    for(int i = 0; i < b; i++){
+        bool vecmatch = arma::approx_equal(x.row(i), y.t(), "absdiff", 0.001);
+        if(vecmatch) {
+            out(i) = 0;
+        } else {
+            out(i) = 1;
+        }
+    }
+
+    return out;
+}
+
+// A different and possibly better way to compute the prior_prop
+// [[Rcpp::export]]
+arma::colvec cget_prior_count(arma::mat red_class,
+                              Rcpp::List mus,
+                              arma::mat labels,
+                              int d,
+                              int n,
+                              int dist_tol = 0) {
+    int n_pairs = mus.size();
+    int n_class = red_class.n_rows;
+    arma::mat tags(n, n_pairs, arma::fill::zeros);
+    arma::colvec m;
+    arma::uvec idx;
+    arma::uvec tagidx;
+    arma::colvec prop_path(n_class, arma::fill::zeros);
+    arma::colvec rSums(n);
+    arma::uvec outidx;
+    arma::colvec onevec;
+    arma::rowvec clsvec;
+
+    // Get Combos
+    arma::field<arma::mat> comb(n_pairs);
+    for(int i = 0; i < n_pairs; i++) {
+        comb(i) = Rcpp::as<arma::mat>(mus[i]);
+        comb(i).transform([](double val) { return(trans_func(val)); } );
+    }
+
+    // Which fits model which pairs of dims
+    arma::mat dims = cstr_split(get_list_names(mus), "_");
+
+    // For each possible class
+    for(int i = 0; i < n_class; i++) {
+        clsvec = red_class.row(i);
+        
+        // For each pair of dims
+        for(int j = 0; j < n_pairs; j++) {
+            m.set_size(comb(j).n_rows);
+            idx.set_size(comb(j).n_rows);
+            
+            m = caccept(comb(j), { clsvec(dims(j,0)-1), clsvec(dims(j,1)-1) } );
+            idx = find(m == 0);
+            tagidx = find(labels.col(j) == (idx(0)+1));
+ 
+            onevec.ones(tagidx.size());
+            tags.elem(tagidx+(n*j)) = onevec;
+        }
+
+        rSums = sum(tags, 1);
+        outidx = find(rSums >= (n_pairs - dist_tol));
+        tags.zeros();
+        prop_path(i) = (outidx.size());
+    }
+    return prop_path;
+}

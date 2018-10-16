@@ -1,7 +1,17 @@
 # Functions needed to process process and run gibbs sampler
 
 # Get expected value of prior probability on full mixing proportions
-get_prior_prop <- function(fits, red_class, d) {
+# Based on empirical concordance with various paths in red_class
+get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0){
+    mus <- map(fits, "mu")
+    labels <- map(fits, "cluster") %>% simplify2array
+    
+    prior_count <- cget_prior_count(red_class, mus, labels, d, n, dist_tol)
+    prior_count/n
+}
+
+# Get expected value of prior probability on full mixing proportions
+get_prior_prop_OLD <- function(fits, red_class, d) {
     mus <- purrr::map(fits, "mu")
     props <- purrr::map(fits, "prop")
     cget_prior_prop(red_class, mus, props, d)
@@ -40,7 +50,11 @@ get_hyperparams <- function(fits, d, red_class) {
             }
         }
         mu0_temp[i] <- mean(muvec)
-        Psi0_temp[i,i] <- mean(sigmavec)
+        Psi0_temp[i,i] <- mean(sigmavec) # This covariance probably isnt correct
+    }
+    
+    for(i in seq(nrow(spl))) {
+        # This covariance probably isnt correct
         Psi0_temp[spl[i,1], spl[i,2]] <- Psi0_temp[spl[i,2], spl[i,1]] <- rhos[[i]]
     }
 
@@ -82,8 +96,11 @@ get_hyperparams <- function(fits, d, red_class) {
     list("mu0" = mu0, "Psi0" = Psi0)
 }
 
-get_kappa <- function(z) {
-    rle(sort(z))$lengths
+get_kappa <- function(z, nclass) {
+    kappa <- rep(0, nclass)
+    runlens <- rle(sort(z))
+    kappa[runlens$values] <- runlens$lengths
+    kappa
 }
 
 draw_mix_prop <- function(alpha, z){
@@ -99,7 +116,7 @@ draw_mix_prop <- function(alpha, z){
 
 # Mean and variance
 draw_NIW <- function(x, hyp, z) {
-    nz <- get_kappa(z)
+    nz <- hyp$kappa#get_kappa(z, nclass)
     xbar <- sapply(seq(ncol(x)), function(X) tapply(x[,X], z, mean))
 
     lapply(1:nrow(hyp$hyp$mu0), function(X)
@@ -122,7 +139,7 @@ run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
     n <- nrow(x)
     nclass <- nrow(red_class)
     z_init <- sample(seq(nclass), replace = TRUE, size = n, prob = prior_prop)
-    kappa <- get_kappa(z_init) # kappa = nu. get_kappa can also be used to update n^z
+    kappa <- get_kappa(z_init, nclass) # kappa = nu. get_kappa can also be used to update n^z
     hyp <- list("kappa" = kappa, "hyp" = get_hyperparams(fits, d, red_class))
     prop0 <- draw_mix_prop(alpha = prior_prop, z = z_init) # can probably update this to just pass zcoll
     NIW <- draw_NIW(x, hyp, z_init)
