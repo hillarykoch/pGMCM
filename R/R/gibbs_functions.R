@@ -7,7 +7,7 @@ get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0){
     labels <- map(fits, "cluster") %>% simplify2array
     
     prior_count <- cget_prior_count(red_class, mus, labels, d, n, dist_tol)
-    prior_count/n
+    (prior_count/n)/(sum(prior_count/n))
 }
 
 # Get expected value of prior probability on full mixing proportions

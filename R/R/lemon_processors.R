@@ -168,3 +168,11 @@ get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
     assoc <- associate(paths, filepath, filt_h = filt)
     prune_paths(h, assoc)
 }
+
+# Among all reduced classes, get the indices which correspond to the truth
+# For simulated data only
+get_true_assoc_idx <- function(red_class, true_assoc) {
+    true_assoc <- as.matrix(true_assoc)
+    trueidx <- cget_true_assoc_idx(red_class, true_assoc)
+    sort(trueidx)
+}

@@ -319,3 +319,29 @@ arma::colvec cget_prior_count(arma::mat red_class,
     }
     return prop_path;
 }
+
+// Among all reduced classes, get the indices which correspond to the truth
+// FOR SIMULATED DATA ONLY
+// [[Rcpp::export]]
+arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc) {
+    int nassoc = true_assoc.n_rows;
+    arma::uvec trueidx;
+    arma::colvec m;
+    arma::colvec out(nassoc);
+    
+    int count = 0;
+    for(int i = 0; i < nassoc; i++) {
+        m = caccept(red_class, true_assoc.row(i).t());
+        trueidx = find(m == 0);
+        if(trueidx.size() > 0) {
+            out(count) = trueidx(0);
+            count += 1;
+        }
+        m.reset();
+        trueidx.reset();
+    }
+    
+    return (out + 1); // adding 1 because indexing is going back to R
+}
+
+

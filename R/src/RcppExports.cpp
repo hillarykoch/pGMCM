@@ -88,6 +88,34 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// caccept
+arma::vec caccept(arma::mat x, arma::colvec y);
+RcppExport SEXP _pGMCM_caccept(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(caccept(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cget_prior_count
+arma::colvec cget_prior_count(arma::mat red_class, Rcpp::List mus, arma::mat labels, int d, int n, int dist_tol);
+RcppExport SEXP _pGMCM_cget_prior_count(SEXP red_classSEXP, SEXP musSEXP, SEXP labelsSEXP, SEXP dSEXP, SEXP nSEXP, SEXP dist_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type mus(musSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type labels(labelsSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type dist_tol(dist_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(cget_prior_count(red_class, mus, labels, d, n, dist_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // abs3
 double abs3(double val);
 RcppExport SEXP _pGMCM_abs3(SEXP valSEXP) {
@@ -497,6 +525,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_cstr_split", (DL_FUNC) &_pGMCM_cstr_split, 2},
     {"_pGMCM_trans_func", (DL_FUNC) &_pGMCM_trans_func, 1},
     {"_pGMCM_cget_prior_prop", (DL_FUNC) &_pGMCM_cget_prior_prop, 4},
+    {"_pGMCM_caccept", (DL_FUNC) &_pGMCM_caccept, 2},
+    {"_pGMCM_cget_prior_count", (DL_FUNC) &_pGMCM_cget_prior_count, 6},
     {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_SCAD_1d", (DL_FUNC) &_pGMCM_SCAD_1d, 4},
     {"_pGMCM_double_SCAD_1d", (DL_FUNC) &_pGMCM_double_SCAD_1d, 3},

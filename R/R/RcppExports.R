@@ -29,6 +29,14 @@ cget_prior_prop <- function(red_class, mus, props, d) {
     .Call(`_pGMCM_cget_prior_prop`, red_class, mus, props, d)
 }
 
+caccept <- function(x, y) {
+    .Call(`_pGMCM_caccept`, x, y)
+}
+
+cget_prior_count <- function(red_class, mus, labels, d, n, dist_tol = 0L) {
+    .Call(`_pGMCM_cget_prior_count`, red_class, mus, labels, d, n, dist_tol)
+}
+
 abs3 <- function(val) {
     .Call(`_pGMCM_abs3`, val)
 }
