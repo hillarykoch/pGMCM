@@ -19,6 +19,11 @@ LEMON citation:
 Balázs Dezső, Alpár Jüttner, Péter Kovács. LEMON – an Open Source C++ Graph Template Library. Electronic Notes in Theoretical Computer Science, 264:23-45, 2011. Proceedings of the Second Workshop on Generative Technologies (WGT) 2010.
 -->
 
+You need a compiler that has support for C++11, such as
+
+*   GCC: [see here, for example](https://www.gnu.org/software/gcc/projects/cxx-status.html#cxx11)
+*   clang: [see here](http://clang.llvm.org/cxx_status.html)
+
 *note: the R version is fully functional but the Julia code is just a test that cannot practically be used.*
 
 
