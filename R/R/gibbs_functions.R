@@ -162,3 +162,33 @@ run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
     param.tr
 }
 
+# extend a gibbs sampler that has already been run for some number of iterations
+extend_gibbs <- function(param.tr, x, prior_prop, fits, d, red_class, nsamp) {
+    n <- nrow(x)
+    nclass <- nrow(red_class)
+    nsamp_prev <- length(param.tr)
+    
+    kappa <- get_kappa(param.tr[[nsamp_prev]]$z, nclass)
+    hyp <- list("kappa" = kappa, "hyp" = get_hyperparams(fits, d, red_class))
+    
+    mix_prop_star <- draw_mix_prop(alpha = prior_prop, z = param.tr[[nsamp_prev]]$z)
+    NIW_star <- draw_NIW(x, hyp, param.tr[[nsamp_prev]]$z)
+    zstar <- updatez(x, param.tr[[nsamp_prev]]$NIW)
+    param.tr2 <- list()
+    param.tr2[[1]] <- list("z" = zstar,
+                           "mix_prop" = mix_prop_star,
+                           "NIW" = NIW_star)
+
+    pb <- txtProgressBar(min = 2, max = nsamp, style = 3)
+    for(i in 2:nsamp) {
+        mix_prop <- draw_mix_prop(prior_prop, param.tr2[[i-1]]$z)
+        NIW <- draw_NIW(x, hyp, param.tr2[[i-1]]$z)
+        zstar <- updatez(x, NIW)
+        param.tr2[[i]] <- list("z" = zstar, "mix_prop" = mix_prop, "NIW" = NIW)
+        setTxtProgressBar(pb,i)
+    }
+    close(pb)
+    
+    c(param.tr, param.tr2)
+}
+

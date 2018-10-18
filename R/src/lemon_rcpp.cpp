@@ -20,7 +20,7 @@ using namespace std;
 
 // Collect output from my algorithm
 // [[Rcpp::export]]
-arma::mat cgetPaths(std::string filepath) {
+arma::mat cgetPaths(std::string filepath, int len_filt_h, Rcpp::List nonconsec) {
     ListDigraph gr;
     ListDigraph::NodeMap<int> dim(gr);
     ListDigraph::NodeMap<int> label(gr);
@@ -33,8 +33,8 @@ arma::mat cgetPaths(std::string filepath) {
     std::vector<int> all_paths; // instantiate a resizable vector to contain all paths
     std::fstream infile;
     infile.open(filepath);
-    
-    
+
+
     // Read in Directed Graph from lgf.txt
     // "attributes" source and target are declared to be nodes and named src and trg
     // dim gives which "layer" the given node lies in
@@ -45,20 +45,20 @@ arma::mat cgetPaths(std::string filepath) {
         .node("source", src)
         .node("target", trg)
         .run();
-    
+
     ListDigraph::NodeMap<int> layer(gr);
     for(ListDigraph::NodeIt u(gr); u != INVALID; ++u) {
         layer[u] = dim[u];
     }
-    
+
     int d = dim[trg]-1;
-    
+
     // Enumerate all paths using DFS and backtracking
     int num_paths = 0; // when not 0, enter a different section of "findPath" function
     PathEnumeration enumeration(gr, src, trg);
-    
-    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer);
-    
+
+    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer, filepath, len_filt_h, nonconsec);
+
     // need to write this function
     num_paths = (all_paths.size())/(d+2);
     arma::mat out(d+2, num_paths, arma::fill::none);
@@ -75,7 +75,7 @@ arma::uvec crowMatch(arma::mat assoc, arma::mat nonconsec) {
     // do matching
     int n_assoc = assoc.n_rows;
     int n_valid = nonconsec.n_rows;
-    
+
     // 1 if keep, 0 otherwise
     arma::uvec keepers(n_assoc, arma::fill::zeros);
     for(int i = 0; i < n_assoc; i++) {
@@ -86,57 +86,8 @@ arma::uvec crowMatch(arma::mat assoc, arma::mat nonconsec) {
             }
         }
     }
-    
+
     return keepers;
-}
-
-// Get names of an Rcpp::List
-// [[Rcpp::export]]
-std::vector<std::string> get_list_names(Rcpp::List L) {
-    return L.names();
-}
-
-// C version of paste0
-// [[Rcpp::export]]
-std::string cpaste0(std::vector<std::string> str1) {
-    std::string pasted;
-    for(std::vector<std::string>::iterator it = str1.begin(); it != str1.end(); ++it) {
-        pasted += *it;
-    }
-    
-    return pasted;
-}
-
-// perform action just like R's str_split
-// [[Rcpp::export]]
-arma::mat cstr_split(std::vector<std::string> strings, std::string split) {
-    int num_strings = strings.size();
-    arma::mat dims(num_strings, 2, arma::fill::none);
-    
-    for(auto i = 0; i < num_strings; i++) {
-        int num_substr = strings[i].length();
-        std::vector<std::string> tmp1;
-        std::vector<std::string> tmp2;
-        bool found_split = FALSE;
-        
-        for(auto j=0; j < num_substr; j++) {
-            if(found_split == FALSE) {
-                if(strings[i].substr(j,1) != split) {
-                    tmp1.push_back(strings[i].substr(j,1));
-                } else {
-                    found_split = TRUE;
-                }
-            } else {
-                tmp2.push_back(strings[i].substr(j,1));
-            }
-        }
-        
-        // Still need to paste tmp1, tmp2 each into one individual int
-        dims(i,0) = std::stoi(cpaste0(tmp1));
-        dims(i,1) = std::stoi(cpaste0(tmp2));
-    }
-    
-    return dims;
 }
 
 // Function to pass to .transform()
@@ -169,27 +120,27 @@ arma::colvec cget_prior_prop(arma::mat red_class,
     arma::uvec zeroidx;
     arma::cube propQ (3, 1, d);
     arma::colvec means;
-    
+
     // Get Combos
     arma::field<arma::mat> comb(n_pairs);
     for(int i = 0; i < n_pairs; i++) {
         comb(i) = Rcpp::as<arma::mat>(mus[i]);
         comb(i).transform([](double val) { return(trans_func(val)); } );
     }
-    
+
     // Which fits model which pairs of dims
     arma::mat dims = cstr_split(get_list_names(mus), "_");
-    
+
     // for each dim
     for(int i = 1; i <= d; i++) {
         //
         // Get marginal proportions
         //
-        
+
         assoc.set_size(d-1);
         marg_prop.set_size(d-1);
         int count = 0;
-        
+
         // Across all analyses where we consider the given dim
         for(int j = 0; j < dims.n_rows; j++) {
             bools = find(dims.row(j) == i);
@@ -218,7 +169,7 @@ arma::colvec cget_prior_prop(arma::mat red_class,
             if(j == 0) {
                 unl_assoc.subvec(0, size(assoc(0))) =  assoc(0);
                 unl_marg_prop.subvec(0, size(assoc(0))) =  marg_prop(0);
-            } else { 
+            } else {
                 unl_assoc.subvec(accu(sublens.subvec(0,j-1)), size(assoc(j))) =  assoc(j);
                 unl_marg_prop.subvec(accu(sublens.subvec(0,j-1)), size(marg_prop(j))) =  marg_prop(j);
             }
@@ -226,7 +177,7 @@ arma::colvec cget_prior_prop(arma::mat red_class,
         negidx = find(unl_assoc == -1);
         zeroidx = find(unl_assoc == 0);
         posidx = find(unl_assoc == 1);
-        
+
         means = { mean(unl_marg_prop.elem(negidx)),
                     mean(unl_marg_prop.elem(zeroidx)),
                     mean(unl_marg_prop.elem(posidx)) };
@@ -240,10 +191,10 @@ arma::colvec cget_prior_prop(arma::mat red_class,
         red_class.col(i-1).replace(0, propQ(1,0,i-1));
         red_class.col(i-1).replace(1, propQ(2,0,i-1));
     }
-    
+
     arma::colvec prob = prod(red_class, 1);
     prob = prob/(accu(prob));
-    
+
     return prob;
 }
 
@@ -252,7 +203,7 @@ arma::colvec cget_prior_prop(arma::mat red_class,
 arma::vec caccept(arma::mat x, arma::colvec y){
     int b = x.n_rows;
     arma::vec out(b, arma::fill::none);
-    
+
     for(int i = 0; i < b; i++){
         bool vecmatch = arma::approx_equal(x.row(i), y.t(), "absdiff", 0.001);
         if(vecmatch) {
@@ -298,16 +249,16 @@ arma::colvec cget_prior_count(arma::mat red_class,
     // For each possible class
     for(int i = 0; i < n_class; i++) {
         clsvec = red_class.row(i);
-        
+
         // For each pair of dims
         for(int j = 0; j < n_pairs; j++) {
             m.set_size(comb(j).n_rows);
             idx.set_size(comb(j).n_rows);
-            
+
             m = caccept(comb(j), { clsvec(dims(j,0)-1), clsvec(dims(j,1)-1) } );
             idx = find(m == 0);
             tagidx = find(labels.col(j) == (idx(0)+1));
- 
+
             onevec.ones(tagidx.size());
             tags.elem(tagidx+(n*j)) = onevec;
         }
@@ -328,7 +279,7 @@ arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc) {
     arma::uvec trueidx;
     arma::colvec m;
     arma::colvec out(nassoc);
-    
+
     int count = 0;
     for(int i = 0; i < nassoc; i++) {
         m = caccept(red_class, true_assoc.row(i).t());
@@ -340,8 +291,6 @@ arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc) {
         m.reset();
         trueidx.reset();
     }
-    
+
     return (out + 1); // adding 1 because indexing is going back to R
 }
-
-

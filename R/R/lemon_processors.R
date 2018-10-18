@@ -48,6 +48,7 @@ get_consecutive <- function(h, non_consec = FALSE) {
 
 # Make LGF file to be read by LEMON DigraphReader
 write_LGF <- function(h, d, path) {
+    cat("Writing LGF file...")
     # Make node section of LGF file
     filt_h <- filter_h(h, d)
     dims <- map(filt_h, length)
@@ -122,8 +123,8 @@ write_LGF <- function(h, d, path) {
 }
 
 # get paths using LEMON, then convert to latent association vectors
-get_paths <- function(filepath) {
-    path_build <- cgetPaths(filepath = filepath)
+get_paths <- function(filepath, len_filt_h, nonconsec) {
+    path_build <- cgetPaths(filepath = filepath, len_filt_h, nonconsec)
     path_build
 }
 
@@ -164,9 +165,10 @@ get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
     h <- get_h(fits)
     filt <- filter_h(h, d)
     write_LGF(h, d, filepath)
-    paths <- get_paths(filepath)
-    assoc <- associate(paths, filepath, filt_h = filt)
-    prune_paths(h, assoc)
+    paths <- get_paths(filepath, length(unlist(filt)), get_consecutive(h, non_consec = TRUE))
+    assoc <- associate(paths, filepath, filt_h = filt) # Still need to associate one last time
+    assoc
+    #prune_paths(h, assoc)
 }
 
 # Among all reduced classes, get the indices which correspond to the truth

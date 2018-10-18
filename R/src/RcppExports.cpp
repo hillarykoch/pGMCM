@@ -7,13 +7,15 @@
 using namespace Rcpp;
 
 // cgetPaths
-arma::mat cgetPaths(std::string filepath);
-RcppExport SEXP _pGMCM_cgetPaths(SEXP filepathSEXP) {
+arma::mat cgetPaths(std::string filepath, int len_filt_h, Rcpp::List nonconsec);
+RcppExport SEXP _pGMCM_cgetPaths(SEXP filepathSEXP, SEXP len_filt_hSEXP, SEXP nonconsecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type filepath(filepathSEXP);
-    rcpp_result_gen = Rcpp::wrap(cgetPaths(filepath));
+    Rcpp::traits::input_parameter< int >::type len_filt_h(len_filt_hSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type nonconsec(nonconsecSEXP);
+    rcpp_result_gen = Rcpp::wrap(cgetPaths(filepath, len_filt_h, nonconsec));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -26,40 +28,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type assoc(assocSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type nonconsec(nonconsecSEXP);
     rcpp_result_gen = Rcpp::wrap(crowMatch(assoc, nonconsec));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_list_names
-std::vector<std::string> get_list_names(Rcpp::List L);
-RcppExport SEXP _pGMCM_get_list_names(SEXP LSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type L(LSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_list_names(L));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpaste0
-std::string cpaste0(std::vector<std::string> str1);
-RcppExport SEXP _pGMCM_cpaste0(SEXP str1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type str1(str1SEXP);
-    rcpp_result_gen = Rcpp::wrap(cpaste0(str1));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cstr_split
-arma::mat cstr_split(std::vector<std::string> strings, std::string split);
-RcppExport SEXP _pGMCM_cstr_split(SEXP stringsSEXP, SEXP splitSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type strings(stringsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type split(splitSEXP);
-    rcpp_result_gen = Rcpp::wrap(cstr_split(strings, split));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -125,6 +93,78 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type true_assoc(true_assocSEXP);
     rcpp_result_gen = Rcpp::wrap(cget_true_assoc_idx(red_class, true_assoc));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_list_names
+std::vector<std::string> get_list_names(Rcpp::List L);
+RcppExport SEXP _pGMCM_get_list_names(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type L(LSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_list_names(L));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpaste0
+std::string cpaste0(std::vector<std::string> str1);
+RcppExport SEXP _pGMCM_cpaste0(SEXP str1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type str1(str1SEXP);
+    rcpp_result_gen = Rcpp::wrap(cpaste0(str1));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cstr_split
+arma::mat cstr_split(std::vector<std::string> strings, std::string split);
+RcppExport SEXP _pGMCM_cstr_split(SEXP stringsSEXP, SEXP splitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type strings(stringsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type split(splitSEXP);
+    rcpp_result_gen = Rcpp::wrap(cstr_split(strings, split));
+    return rcpp_result_gen;
+END_RCPP
+}
+// caccept2
+arma::vec caccept2(arma::mat x, double y1, double y2);
+RcppExport SEXP _pGMCM_caccept2(SEXP xSEXP, SEXP y1SEXP, SEXP y2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type y1(y1SEXP);
+    Rcpp::traits::input_parameter< double >::type y2(y2SEXP);
+    rcpp_result_gen = Rcpp::wrap(caccept2(x, y1, y2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cprune_path
+bool cprune_path(Rcpp::List nonconsec, std::vector<int> assoc);
+RcppExport SEXP _pGMCM_cprune_path(SEXP nonconsecSEXP, SEXP assocSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type nonconsec(nonconsecSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type assoc(assocSEXP);
+    rcpp_result_gen = Rcpp::wrap(cprune_path(nonconsec, assoc));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cassociate
+std::vector<int> cassociate(std::vector<int> path, std::string filepath, int len_filt_h);
+RcppExport SEXP _pGMCM_cassociate(SEXP pathSEXP, SEXP filepathSEXP, SEXP len_filt_hSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<int> >::type path(pathSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filepath(filepathSEXP);
+    Rcpp::traits::input_parameter< int >::type len_filt_h(len_filt_hSEXP);
+    rcpp_result_gen = Rcpp::wrap(cassociate(path, filepath, len_filt_h));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -530,16 +570,19 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_pGMCM_cgetPaths", (DL_FUNC) &_pGMCM_cgetPaths, 1},
+    {"_pGMCM_cgetPaths", (DL_FUNC) &_pGMCM_cgetPaths, 3},
     {"_pGMCM_crowMatch", (DL_FUNC) &_pGMCM_crowMatch, 2},
-    {"_pGMCM_get_list_names", (DL_FUNC) &_pGMCM_get_list_names, 1},
-    {"_pGMCM_cpaste0", (DL_FUNC) &_pGMCM_cpaste0, 1},
-    {"_pGMCM_cstr_split", (DL_FUNC) &_pGMCM_cstr_split, 2},
     {"_pGMCM_trans_func", (DL_FUNC) &_pGMCM_trans_func, 1},
     {"_pGMCM_cget_prior_prop", (DL_FUNC) &_pGMCM_cget_prior_prop, 4},
     {"_pGMCM_caccept", (DL_FUNC) &_pGMCM_caccept, 2},
     {"_pGMCM_cget_prior_count", (DL_FUNC) &_pGMCM_cget_prior_count, 6},
     {"_pGMCM_cget_true_assoc_idx", (DL_FUNC) &_pGMCM_cget_true_assoc_idx, 2},
+    {"_pGMCM_get_list_names", (DL_FUNC) &_pGMCM_get_list_names, 1},
+    {"_pGMCM_cpaste0", (DL_FUNC) &_pGMCM_cpaste0, 1},
+    {"_pGMCM_cstr_split", (DL_FUNC) &_pGMCM_cstr_split, 2},
+    {"_pGMCM_caccept2", (DL_FUNC) &_pGMCM_caccept2, 3},
+    {"_pGMCM_cprune_path", (DL_FUNC) &_pGMCM_cprune_path, 2},
+    {"_pGMCM_cassociate", (DL_FUNC) &_pGMCM_cassociate, 3},
     {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_SCAD_1d", (DL_FUNC) &_pGMCM_SCAD_1d, 4},
     {"_pGMCM_double_SCAD_1d", (DL_FUNC) &_pGMCM_double_SCAD_1d, 3},

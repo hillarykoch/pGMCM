@@ -1,15 +1,19 @@
 #ifndef _findPath_H
 #define _findPath_H
 
+#include <RcppArmadillo.h>
 #include <iostream>
 #include <lemon/list_graph.h>
 #include <lemon/lgf_reader.h>
 #include <lemon/dfs.h>
 #include <lemon/adaptors.h>
 #include "pathenumeration.h"
+#include "prune_enhancer.h"
 
 using namespace lemon;
 using namespace std;
+using namespace Rcpp;
+using namespace RcppArmadillo;
 
 void findPath(ListDigraph& gr,
               ListDigraph::Node& src,
@@ -20,8 +24,15 @@ void findPath(ListDigraph& gr,
               vector<int>& all_paths,
               ListDigraph::ArcMap<bool>& filter,
               ListDigraph::Node& curr_node,
-              ListDigraph::NodeMap<int>& layer )
+              ListDigraph::NodeMap<int>& layer, // everything after here has been added for my new pruner
+              std::string& filepath,
+              int& len_filt_h,
+              Rcpp::List& nonconsec)
 {
+    vector<int> prune_check;
+    bool prune_bool = false;
+    std::vector<int> assoc;
+
     if(num_paths == 0)
     {
         // FIND INITIAL PATH
@@ -40,26 +51,42 @@ void findPath(ListDigraph& gr,
         // d+2 = enumeration.len() when the enumeration is full
         for(int i=0; i < d+2; i++) {
             all_paths.push_back(gr.id(enumeration[i]));
+            prune_check.push_back(gr.id(enumeration[i]));
         }
+
+        // THEN CHECK IF PRUNE CHECK IS VALID USING NONCONSEC
+        // if keep, prune_bool = false; true, prune_bool = false;
+        assoc = cassociate(prune_check, filepath, len_filt_h); // get the association value from node number
+        prune_bool = cprune_path(nonconsec, assoc); // ask if path should be pruned
+
+        if(prune_bool)
+        {
+            for(int i=0; i < d+2; i++)
+            {
+                all_paths.pop_back();
+            }
+        }
+        prune_check.clear();
+
         // move_curr_node one back in the path
         curr_node = enumeration[d];
-        
+
         // POP TARGET NODE
         enumeration.pop_last(); // automatically filters between curr_node and target and decrements curr_node's outArcs
 
-        findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer);
+        findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer, filepath, len_filt_h, nonconsec);
     } else // IF NUM_PATHS > 0
     {
         // update filter (might want to put this in main and pass by reference)
         FilterArcs<ListDigraph> subgraph(gr, filter);
-        Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);  
+        Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);
         int sz;
         vector<int> temp;
         ListDigraph::Node old_node;
 
         // STOPPING RULE
         while(!(enumeration.len() > 0 && enumeration[0] == src && enumeration.outArcs(enumeration[0]) == 0))
-        {   
+        {
             // WHILE THE CURRENT NODE STILL HAS FEASIBLE OUTGOING PATHS
             while(enumeration.outArcs(curr_node) > 0)
             {
@@ -70,6 +97,7 @@ void findPath(ListDigraph& gr,
                 sz = enumeration.len();
                 for(int i = 0; i < sz; i++) {
                     all_paths.push_back(gr.id(enumeration[i]));
+                    prune_check.push_back(gr.id(enumeration[i]));
                 }
                 for(ListDigraph::NodeIt n(gr); n != INVALID; ++n) {
                     if(sub_dfs.reached(n) && gr.id(n) != gr.id(curr_node)) {
@@ -81,6 +109,8 @@ void findPath(ListDigraph& gr,
                 for(auto i = 0; i < temp.size(); i++)
                 {
                     all_paths.push_back(temp[i]);
+                    prune_check.push_back(temp[i]);
+
                     for(ListDigraph::NodeIt n(gr); n != INVALID; ++n)
                     {
                         if(gr.id(n) == temp[i])
@@ -89,15 +119,29 @@ void findPath(ListDigraph& gr,
                         }
                     }
                 }
+
+                // THEN CHECK IF PRUNE CHECK IS VALID USING NONCONSEC
+                // if keep, prune_bool = false; true, prune_bool = false;
+                assoc = cassociate(prune_check, filepath, len_filt_h); // get the association value from node number
+                prune_bool = cprune_path(nonconsec, assoc); // ask if path should be pruned
+
+                if(prune_bool)
+                {
+                    for(int i=0; i < d+2; i++)
+                    {
+                        all_paths.pop_back();
+                    }
+                }
+                prune_check.clear();
                 temp.clear();
                 enumeration.pop_last();
                 curr_node = enumeration[d];
-                
+
                 for(ListDigraph::ArcIt a(gr); a != INVALID; ++a) {
                     filter[a] = enumeration.filter(a);
                 }
 
-                findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer);
+                findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer, filepath, len_filt_h, nonconsec);
             }
             // ONLY MOVE BACK 1 IF WE ARE NOT ALREADY AT THE SOURCE NODE
             // OTHERWISE, JUST EXIT
@@ -136,11 +180,11 @@ void findPath(ListDigraph& gr,
                     filter[a] = enumeration.filter(a);
                 }
 
-                findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer);
+                findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer, filepath, len_filt_h, nonconsec);
             }
         }
     }
 }
 
-   
+
 #endif
