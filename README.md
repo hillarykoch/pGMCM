@@ -23,7 +23,10 @@ library(pGMCM)
 ```
 *note: the R version is fully functional but the Julia code is just a test that cannot practically be used.*
 
+## About the software
+<!---
 The GMCM is a copula mixture that generalizes to any dimension. This package implements a general form of the pGMCM as well as a constrained version. It also implements a general and similarly constrained penalized Gaussian mixture model. The penalization allows for selection of the number of clusters, subject to a user-selected upper bound.
+-->
 
 General case, with user-selected upper bound 10:
 ![triangle](triangle.png)
