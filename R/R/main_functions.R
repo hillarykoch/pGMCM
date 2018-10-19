@@ -162,11 +162,6 @@ rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d, combos = NULL){
         replace(combos == 1, sigma[3]) %>%
         replace(combos == 0, 1) %>%
         as.matrix
-    rho_combos <- rep(0,k) %>%
-        replace(apply(combos, 1, sum) == -2, rho[1]) %>%
-        replace(apply(combos, 1, sum) == 0 &
-                    !apply(combos, 1, function(X) any(X == 0)), rho[2]) %>%
-        replace(apply(combos, 1, sum) == 2, rho[3])
 
     if(sum(prop == 0) > 0){
         keepidx <- prop != 0
