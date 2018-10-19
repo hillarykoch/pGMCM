@@ -125,7 +125,9 @@ write_LGF <- function(h, d, path) {
 
 # get paths using LEMON, then convert to latent association vectors
 get_paths <- function(filepath, len_filt_h, nonconsec) {
+    cat("Finding latent classes...")
     path_build <- cgetPaths(filepath = filepath, len_filt_h, nonconsec)
+    cat("done!\n")
     path_build
 }
 
@@ -148,14 +150,14 @@ associate <- function(paths, filepath, filt_h) {
 #     nonconsec <- get_consecutive(h, non_consec = TRUE)
 #     labs <- names(nonconsec)
 #     keepers <- matrix(0, nrow = nrow(assoc_mx), ncol = length(nonconsec))
-# 
+#
 #     for (i in seq_along(nonconsec)) {
 #         pair <- strsplit(labs[i], split = "_") %>%
 #             `[[` (1) %>%
 #             as.numeric
 #         keepers[,i] <- crowMatch(assoc_mx[, pair], nonconsec[[i]])[,1]
 #     }
-# 
+#
 #     # If a row is ever not a keeper (contains at least one 0), remove it
 #     prunes <- apply(keepers, MARGIN = 1, function(X) any(X == 0))
 #     assoc_mx[!prunes,]
