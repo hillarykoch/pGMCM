@@ -10,12 +10,12 @@ get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0){
     (prior_count/n)/(sum(prior_count/n))
 }
 
-# Get expected value of prior probability on full mixing proportions
-get_prior_prop_OLD <- function(fits, red_class, d) {
-    mus <- purrr::map(fits, "mu")
-    props <- purrr::map(fits, "prop")
-    cget_prior_prop(red_class, mus, props, d)
-}
+# # Get expected value of prior probability on full mixing proportions
+# get_prior_prop_OLD <- function(fits, red_class, d) {
+#     mus <- purrr::map(fits, "mu")
+#     props <- purrr::map(fits, "prop")
+#     cget_prior_prop(red_class, mus, props, d)
+# }
 
 # Averaging mus, sigmas in each dimension, recording rhos directly
 # The covariance is NOT handled correctly at the moment

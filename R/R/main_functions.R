@@ -109,7 +109,7 @@ rconstr_GMCM <- function(n, prop, mu, sigma, rho, d, combos = NULL){
 }
 
 # generate data for second constrained version of GMCM
-rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d){
+rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d, combos = NULL){
     # n: sample size
     # prop: mixing proportion of each cluster
     # d: dimension of data (number of replicates)
@@ -123,7 +123,10 @@ rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d){
     # k: number of clusters
 
     # Generate all combinations of replication, given in any order
-    combos <- expand.grid(rep(list(-1:1),d)) %>% as.matrix
+    if(is.null(combos)){
+        # Generate all combinations of replication, given in any order
+        combos <- expand.grid(rep(list(-1:1),d)) %>% as.matrix
+    }
     k <- nrow(combos)
     if(k != length(prop)){
         stop("length(prop) must be equal to total number of clusters.")
@@ -182,9 +185,9 @@ rconstr0_GMCM <- function(n, prop, mu, sigma, rho, d){
                 function(X)
                     rmvnorm(num[X],
                             mean = mu_combos[X,],
-                            sigma = matrix(c(sig_combos[X,1], rho_combos[X],
-                                             rho_combos[X], sig_combos[X,2]),
-                                           nrow = 2))) %>%
+                            sigma = get_constr0_sigma(sig_combos[X,],
+                                                      combos[X,],
+                                                      rho))) %>%
         abind(along = 1) %>%
         data.frame %>%
         setNames(sapply(seq(d), function(X) paste0("y.", X)))

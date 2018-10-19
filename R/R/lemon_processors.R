@@ -120,6 +120,7 @@ write_LGF <- function(h, d, path) {
               path = path,
               col_names = FALSE,
               append = TRUE)
+    cat("done!\n")
 }
 
 # get paths using LEMON, then convert to latent association vectors
@@ -142,23 +143,23 @@ associate <- function(paths, filepath, filt_h) {
     assoc_mx <- assoc_mx[ , 2:(ncol(assoc_mx) - 1)]
 }
 
-# Prune paths that are discordant with "non-consecutive" pairwise estimates
-prune_paths <- function(h, assoc_mx) {
-    nonconsec <- get_consecutive(h, non_consec = TRUE)
-    labs <- names(nonconsec)
-    keepers <- matrix(0, nrow = nrow(assoc_mx), ncol = length(nonconsec))
-
-    for (i in seq_along(nonconsec)) {
-        pair <- strsplit(labs[i], split = "_") %>%
-            `[[` (1) %>%
-            as.numeric
-        keepers[,i] <- crowMatch(assoc_mx[, pair], nonconsec[[i]])[,1]
-    }
-
-    # If a row is ever not a keeper (contains at least one 0), remove it
-    prunes <- apply(keepers, MARGIN = 1, function(X) any(X == 0))
-    assoc_mx[!prunes,]
-}
+# # Prune paths that are discordant with "non-consecutive" pairwise estimates
+# prune_paths <- function(h, assoc_mx) {
+#     nonconsec <- get_consecutive(h, non_consec = TRUE)
+#     labs <- names(nonconsec)
+#     keepers <- matrix(0, nrow = nrow(assoc_mx), ncol = length(nonconsec))
+# 
+#     for (i in seq_along(nonconsec)) {
+#         pair <- strsplit(labs[i], split = "_") %>%
+#             `[[` (1) %>%
+#             as.numeric
+#         keepers[,i] <- crowMatch(assoc_mx[, pair], nonconsec[[i]])[,1]
+#     }
+# 
+#     # If a row is ever not a keeper (contains at least one 0), remove it
+#     prunes <- apply(keepers, MARGIN = 1, function(X) any(X == 0))
+#     assoc_mx[!prunes,]
+# }
 
 # Put everything together in one function here, get_reduced_classes
 get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
