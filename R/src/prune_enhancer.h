@@ -17,6 +17,18 @@ using namespace std;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
 
+// Function to pass to .transform()
+// [[Rcpp::export]]
+int trans_func(double& x) {
+    if(x < 0) {
+        return(-1);
+    } else if(x > 0) {
+        return(1);
+    } else {
+        return(0);
+    }
+}
+
 // Get names of an Rcpp::List
 // [[Rcpp::export]]
 std::vector<std::string> get_list_names(Rcpp::List L) {
@@ -64,6 +76,24 @@ arma::mat cstr_split(std::vector<std::string> strings, std::string split) {
     }
     
     return dims;
+}
+
+// Find which row in a matrix equals some vector
+// [[Rcpp::export]]
+arma::vec caccept(arma::mat x, arma::colvec y){
+    int b = x.n_rows;
+    arma::vec out(b, arma::fill::none);
+
+    for(int i = 0; i < b; i++){
+        bool vecmatch = arma::approx_equal(x.row(i), y.t(), "absdiff", 0.001);
+        if(vecmatch) {
+            out(i) = 0;
+        } else {
+            out(i) = 1;
+        }
+    }
+
+    return out;
 }
 
 // Find which row in a matrix equals some vector
@@ -151,4 +181,56 @@ std::vector<int> cassociate(std::vector<int> path,
     }
 
     return assoc;
+}
+
+
+// Prune one path during findPath, rather than after, based on empirical prior prop
+// [[Rcpp::export]]
+double cprune_path2(std::vector<int> assoc,
+                            Rcpp::List mus,
+                            arma::mat labels,
+                            int d,
+                            int n,
+                            int dist_tol) {
+    int n_pairs = mus.size();
+    arma::mat tags(n, n_pairs, arma::fill::zeros);
+    arma::colvec m;
+    arma::uvec idx;
+    arma::uvec tagidx;
+    arma::colvec rSums(n);
+    arma::uvec outidx;
+    arma::colvec onevec;
+
+    // convert std::vector to arma::vec for use in this function
+    arma::colvec clsvec = arma::conv_to<arma::colvec>::from(assoc);
+
+    // Get Combos
+    arma::field<arma::mat> comb(n_pairs);
+    for(int i = 0; i < n_pairs; i++) {
+        comb(i) = Rcpp::as<arma::mat>(mus[i]);
+        comb(i).transform([](double val) { return(trans_func(val)); } );
+    }
+
+    // Which fits model which pairs of dims
+    arma::mat dims = cstr_split(get_list_names(mus), "_");
+
+    // For each pair of dims
+    for(int j = 0; j < n_pairs; j++) {
+        m.set_size(comb(j).n_rows);
+        idx.set_size(comb(j).n_rows);
+
+        m = caccept(comb(j), { clsvec(dims(j,0)-1), clsvec(dims(j,1)-1) } );
+        idx = find(m == 0);
+        tagidx = find(labels.col(j) == (idx(0)+1));
+
+        onevec.ones(tagidx.size());
+        tags.elem(tagidx+(n*j)) = onevec;
+    }
+
+    rSums = sum(tags, 1);
+    outidx = find(rSums >= (n_pairs - dist_tol));
+
+    double emp_prop = static_cast<double>(outidx.size())/(double)(1.0*n);
+
+    return emp_prop;
 }

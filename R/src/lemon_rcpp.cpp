@@ -20,7 +20,13 @@ using namespace std;
 
 // Collect output from my algorithm
 // [[Rcpp::export]]
-arma::mat cgetPaths(std::string filepath, int len_filt_h, Rcpp::List nonconsec) {
+arma::mat cgetPaths(std::string filepath,
+                    int len_filt_h,
+                    Rcpp::List nonconsec,
+                    Rcpp::List mus,
+                    arma::mat labels,
+                    int n,
+                    int dist_tol) {
     ListDigraph gr;
     ListDigraph::NodeMap<int> dim(gr);
     ListDigraph::NodeMap<int> label(gr);
@@ -57,7 +63,9 @@ arma::mat cgetPaths(std::string filepath, int len_filt_h, Rcpp::List nonconsec) 
     int num_paths = 0; // when not 0, enter a different section of "findPath" function
     PathEnumeration enumeration(gr, src, trg);
 
-    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer, filepath, len_filt_h, nonconsec);
+    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
+                curr_node, layer, filepath, len_filt_h, nonconsec, mus,
+                labels, n, dist_tol);
 
     // need to write this function
     num_paths = (all_paths.size())/(d+2);
@@ -88,18 +96,6 @@ arma::uvec crowMatch(arma::mat assoc, arma::mat nonconsec) {
     }
 
     return keepers;
-}
-
-// Function to pass to .transform()
-// [[Rcpp::export]]
-int trans_func(double& x) {
-    if(x < 0) {
-        return(-1);
-    } else if(x > 0) {
-        return(1);
-    } else {
-        return(0);
-    }
 }
 
 // // Get prior probabilities for mixing prop expected values from empirical fitting results
@@ -198,24 +194,6 @@ int trans_func(double& x) {
 //     return prob;
 // }
 
-// Find which row in a matrix equals some vector
-// [[Rcpp::export]]
-arma::vec caccept(arma::mat x, arma::colvec y){
-    int b = x.n_rows;
-    arma::vec out(b, arma::fill::none);
-
-    for(int i = 0; i < b; i++){
-        bool vecmatch = arma::approx_equal(x.row(i), y.t(), "absdiff", 0.001);
-        if(vecmatch) {
-            out(i) = 0;
-        } else {
-            out(i) = 1;
-        }
-    }
-
-    return out;
-}
-
 // A different and possibly better way to compute the prior_prop
 // [[Rcpp::export]]
 arma::colvec cget_prior_count(arma::mat red_class,
@@ -294,3 +272,4 @@ arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc) {
 
     return (out + 1); // adding 1 because indexing is going back to R
 }
+

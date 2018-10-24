@@ -7,7 +7,7 @@ test_mahalanobis <- function(){
                   diag(1:2))
 
     sim <- rGMCM(n, prop, mu, sigma)$data
-    checkEqualsNumeric(mahalanobis(sim, mu[[1]], sigma[[1]]), Mahalanobis(as.matrix(sim), mu[[1]], sigma[[1]]))
+    RUnit::checkEqualsNumeric(mahalanobis(sim, mu[[1]], sigma[[1]]), Mahalanobis(as.matrix(sim), mu[[1]], sigma[[1]]))
 }
 
 test_dmvnorm <- function() {
@@ -20,7 +20,7 @@ test_dmvnorm <- function() {
 
     sim <- rGMCM(n, prop, mu, sigma)$data
 
-    checkEqualsNumeric(dmvnorm(sim, mu[[1]], sigma[[1]]), cdmvnorm(as.matrix(sim), mu[[1]], sigma[[1]]))
+    RUnit::checkEqualsNumeric(dmvnorm(sim, mu[[1]], sigma[[1]]), cdmvnorm(as.matrix(sim), mu[[1]], sigma[[1]]))
 }
 
 # R code for E step
@@ -37,7 +37,7 @@ test_get_prior_count <- function(fits, red_class, d, n) {
     prop_path <- rep(0, nrow(red_class))
     combos <- map(fits, "mu")
     combos <- lapply(combos, function(X) replace(X, X > 0, 1) %>% replace(X < 0, -1))
-    
+
     for(i in seq(nrow(red_class))) {
         tags <- list()
         for(j in seq_along(spl)) {
@@ -47,11 +47,11 @@ test_get_prior_count <- function(fits, red_class, d, n) {
         prop_path[i] <- mean(abind(tags, along = 2) %>% apply(1, all))
     }
     prop_path <- prop_path/sum(prop_path)
-    
+
     # Compute with C++ function
     cprior_prop <- get_prior_prop(red_class, fits, d, n)
-    
-    checkEqualsNumeric(prop_path, cprior_prop)
+
+    RUnit::checkEqualsNumeric(prop_path, cprior_prop)
 }
 
 test_get_true_assoc_idx <- function(red_class, true_assoc) {
@@ -64,9 +64,9 @@ test_get_true_assoc_idx <- function(red_class, true_assoc) {
         }
         trueidx[i] <- which(tst)
     }
-    
+
     Ridx <- sort(trueidx)
     Cidx <- sort(cget_true_assoc_idx(red_class, true_assoc))
-    
-    checkEqualsNumeric(Ridx, Cidx)
+
+    RUnit::checkEqualsNumeric(Ridx, Cidx)
 }

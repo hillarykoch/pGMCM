@@ -84,21 +84,24 @@ class llist {
         void remove_last() {
             if (head == tail) {
                 // If there is only one node, point head and tail to null
-                std::cout << "really shouldn't be here for my purposes" << std::endl;
+                std::cout << "shouldn't be here" << std::endl;
                 head = NULL;
                 tail = NULL;
             }
         
             // currently not handling exception when list is empty
             node *curr = new node;
-            node *prev = new node;
+            //node *prev = new node;
             curr = head;
             while(curr->next != NULL) { // start at head and iterate over llist
-              prev = curr;
+              //prev = curr;
+              tail = curr;
               curr = curr->next;    
             }
-            tail=prev;
-            prev->next=NULL;
+            //tail=prev;
+            //delete prev; // added this to hopefully free some memory
+            tail->next=NULL; // used to say tail->next=NULL;
+
             delete curr;
         }
         
