@@ -36,12 +36,11 @@ void findPath(ListDigraph& gr,
               double emp_prop = 0
               )
 {
-    vector<int> prune_check;
     std::vector<int> assoc;
 
     if(num_paths == 0)
     {
-        { // added this to define a scope?
+        { // define a scope
             // FIND INITIAL PATH
         	Dfs<ListDigraph> dfs(gr);
 
@@ -58,12 +57,12 @@ void findPath(ListDigraph& gr,
             // d+2 = enumeration.len() when the enumeration is full
             for(int i=0; i < d+2; i++) {
                 all_paths.push_back(gr.id(enumeration[i]));
-                prune_check.push_back(gr.id(enumeration[i]));
             }
+            
 
             // THEN CHECK IF PRUNE CHECK IS VALID USING NONCONSEC
             // if keep, prune_bool = false; true, prune_bool = false;
-            assoc = cassociate(prune_check, filepath, len_filt_h); // get the association value from node number
+            assoc = cassociate(all_paths, filepath, len_filt_h); // get the association value from node number
             prune_bool = cprune_path(nonconsec, assoc); // ask if path should be pruned
 
             // If the path is valid, it may still have 0 prior prop,
@@ -85,7 +84,6 @@ void findPath(ListDigraph& gr,
                     all_paths.pop_back();
                 }
             }
-            prune_check.clear();
 
             // move_curr_node one back in the path
             curr_node = enumeration[d];
@@ -93,11 +91,8 @@ void findPath(ListDigraph& gr,
             // POP TARGET NODE
             enumeration.pop_last(); // automatically filters between curr_node and target and decrements curr_node's outArcs
 
-
-            // Try deleting stuff before trying to pass pointers around
-            std::vector<int>().swap(prune_check); // free memory taken by prune_check, possibly dont need .clear() anymore
+            // Delete stuff I don't need anymore
             std::vector<int>().swap(assoc);
-            //////////////////
         }
 
         findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
@@ -105,6 +100,8 @@ void findPath(ListDigraph& gr,
                     labels, n, dist_tol, prune_bool, emp_prop);
     } else // IF NUM_PATHS > 0
     {
+        vector<int> prune_check;
+        std::vector<int> assoc;
 
         // STOPPING RULE
         while(!(enumeration.len() > 0 && enumeration[0] == src && enumeration.outArcs(enumeration[0]) == 0))
@@ -112,7 +109,7 @@ void findPath(ListDigraph& gr,
             // WHILE THE CURRENT NODE STILL HAS FEASIBLE OUTGOING PATHS
             while(enumeration.outArcs(curr_node) > 0)
             {
-                {
+                {   // define a scope
                     // update filter (might want to put this in main and pass by reference)
                     FilterArcs<ListDigraph> subgraph(gr, filter);
                     Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);
@@ -126,7 +123,7 @@ void findPath(ListDigraph& gr,
                     sz = enumeration.len();
                     for(int i = 0; i < sz; i++) {
                         all_paths.push_back(gr.id(enumeration[i]));
-                        prune_check.push_back(gr.id(enumeration[i]));
+                        //prune_check.push_back(gr.id(enumeration[i]));
                     }
                     for(ListDigraph::NodeIt n(gr); n != INVALID; ++n) {
                         if(sub_dfs.reached(n) && gr.id(n) != gr.id(curr_node)) {
@@ -138,7 +135,7 @@ void findPath(ListDigraph& gr,
                     for(auto i = 0; i < temp.size(); i++)
                     {
                         all_paths.push_back(temp[i]);
-                        prune_check.push_back(temp[i]);
+                        //prune_check.push_back(temp[i]);
 
                         for(ListDigraph::NodeIt n(gr); n != INVALID; ++n)
                         {
@@ -148,6 +145,8 @@ void findPath(ListDigraph& gr,
                             }
                         }
                     }
+
+                    prune_check.assign(all_paths.end()-d-2, all_paths.end());
 
                     // THEN CHECK IF PRUNE CHECK IS VALID USING NONCONSEC
                     // if keep, prune_bool = false; true, prune_bool = false;
@@ -174,8 +173,7 @@ void findPath(ListDigraph& gr,
                             all_paths.pop_back();
                         }
                     }
-                    //prune_check.clear(); // probably dont need this
-                    //temp.clear();
+
                     enumeration.pop_last();
                     curr_node = enumeration[d];
 
@@ -183,26 +181,23 @@ void findPath(ListDigraph& gr,
                         filter[a] = enumeration.filter(a);
                     }
 
-                    // Try deleting stuff before trying to pass pointers around
-                    std::vector<int>().swap(prune_check); // free memory taken by prune_check, possibly dont need .clear() anymore
+                    // delete stuff I don't need anymore
+                    std::vector<int>().swap(prune_check);
                     std::vector<int>().swap(assoc);
                     std::vector<int>().swap(temp);
-                    //delete [] prune_bool;
-                    //delete [] emp_prop;
-                    //////////////////
-
-                    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
-                        curr_node, layer, filepath, len_filt_h, nonconsec, mus,
-                        labels, n, dist_tol, prune_bool, emp_prop);
                 }
+                
+                findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
+                    curr_node, layer, filepath, len_filt_h, nonconsec, mus,
+                    labels, n, dist_tol, prune_bool, emp_prop);
+
             }
             // ONLY MOVE BACK 1 IF WE ARE NOT ALREADY AT THE SOURCE NODE
             // OTHERWISE, JUST EXIT
             if(curr_node != src)
             {
-                {
+                {   // define a scope
                     // move_curr_node one back in the path
-                    //ListDigraph::Node old_node = curr_node;
                     curr_node = enumeration[layer[curr_node]-1];
 
                     // pop all nodes after curr_node
@@ -234,18 +229,14 @@ void findPath(ListDigraph& gr,
                         filter[a] = enumeration.filter(a);
                     }
 
-                    // Try deleting stuff before trying to pass pointers around
-                    std::vector<int>().swap(prune_check); // free memory taken by prune_check, possibly dont need .clear() anymore
+                    // delete stuff I don't need anymore
+                    std::vector<int>().swap(prune_check);
                     std::vector<int>().swap(assoc);
-                    //delete [] prune_bool;
-                    //delete [] emp_prop;
-                    //////////////////
-
-
-                    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
-                        curr_node, layer, filepath, len_filt_h, nonconsec, mus,
-                        labels, n, dist_tol, prune_bool, emp_prop);
                 }
+
+                findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
+                    curr_node, layer, filepath, len_filt_h, nonconsec, mus,
+                    labels, n, dist_tol, prune_bool, emp_prop);
             }
         }
     }
