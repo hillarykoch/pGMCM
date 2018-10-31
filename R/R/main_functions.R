@@ -344,7 +344,7 @@ fpGMCM <- function(x, kmax, lambda = NULL, tol = 1e-06, stepmax = 50, itermax = 
 
 # fit the constrained pGMCM
 fconstr_pGMCM <- function(x, lambda = NULL, tol = 1e-06, stepmax = 50,
-                          itermax = 200, convCrit = c("GMCM", "GMM"),
+                          itermax = 200, convCrit = c("GMM"),
                           penaltyType = c("SCAD", "LASSO"), trace_params = FALSE) {
   # x: a matrix of data with rows for observations and columns for features
   n <- nrow(x) # sample size
@@ -403,7 +403,8 @@ fconstr_pGMCM <- function(x, lambda = NULL, tol = 1e-06, stepmax = 50,
     dimnames = list(c("gmm_ll", "gmcm_ll"), seq(stepmax + 1))
   )
   ll.tr[, 1] <- -Inf
-
+    
+  pb <- txtProgressBar(min = 2, max = stepmax+1, style = 3)
   for (stp in 2:(stepmax + 1)) {
     # estimation and model selection of penalized GMM for optimal lambda
     temp_fit <- fconstr_pGMM(z, lambda = lambda, tol = tol, itermax = itermax, penaltyType = penaltyType)
@@ -463,7 +464,9 @@ fconstr_pGMCM <- function(x, lambda = NULL, tol = 1e-06, stepmax = 50,
     if (stp == stepmax + 1) {
       warning("Maximum number of steps reached before convergence.")
     }
+    setTxtProgressBar(pb, i)
   }
+  close(pb)
   best_stp <- which.max(ll.tr["gmcm_ll", ])
 
   out <- param.tr[[best_stp]]
@@ -478,7 +481,7 @@ fconstr_pGMCM <- function(x, lambda = NULL, tol = 1e-06, stepmax = 50,
 }
 
 # fit the second constrained version of pGMCM
-fconstr0_pGMCM <- function(x, lambda = NULL, tol = 1e-06, stepmax = 50, itermax = 200, convCrit = c("GMCM", "GMM"), trace_params = FALSE) {
+fconstr0_pGMCM <- function(x, lambda = NULL, tol = 1e-06, stepmax = 50, itermax = 200, convCrit = c("GMM"), trace_params = FALSE) {
   # x: a matrix of data with rows for observations and columns for features
   n <- nrow(x) # sample size
   d <- ncol(x) # dimension

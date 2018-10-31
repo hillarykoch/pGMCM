@@ -13,7 +13,8 @@ GMM_kmeans <- function(x, k, iter.max = 30) {
     sigma <- lapply(seq(k), function(X) var(x[cl$cluster == X])) %>%
       simplify2array()
   } else {
-    sigma <- lapply(seq(k), function(X) var(x[cl$cluster == X, ])) %>%
+    # I change cov2cor
+    sigma <- lapply(seq(k), function(X) cov2cor(var(x[cl$cluster == X, ]))) %>%
       simplify2array()
   }
 

@@ -36,7 +36,7 @@ void findPath(ListDigraph& gr,
               double emp_prop = 0
               )
 {
-    std::vector<int> assoc;
+    //std::vector<int> assoc;
 
     if(num_paths == 0)
     {
@@ -62,6 +62,7 @@ void findPath(ListDigraph& gr,
 
             // THEN CHECK IF PRUNE CHECK IS VALID USING NONCONSEC
             // if keep, prune_bool = false; true, prune_bool = false;
+            std::vector<int> assoc;
             assoc = cassociate(all_paths, filepath, len_filt_h); // get the association value from node number
             prune_bool = cprune_path(nonconsec, assoc); // ask if path should be pruned
 
@@ -100,8 +101,8 @@ void findPath(ListDigraph& gr,
                     labels, n, dist_tol, prune_bool, emp_prop);
     } else // IF NUM_PATHS > 0
     {
-        vector<int> prune_check;
-        std::vector<int> assoc;
+        //vector<int> prune_check;
+        //std::vector<int> assoc;
 
         // STOPPING RULE
         while(!(enumeration.len() > 0 && enumeration[0] == src && enumeration.outArcs(enumeration[0]) == 0))
@@ -145,7 +146,9 @@ void findPath(ListDigraph& gr,
                             }
                         }
                     }
-
+                    
+                    vector<int> prune_check;
+                    std::vector<int> assoc;
                     prune_check.assign(all_paths.end()-d-2, all_paths.end());
 
                     // THEN CHECK IF PRUNE CHECK IS VALID USING NONCONSEC
@@ -230,8 +233,8 @@ void findPath(ListDigraph& gr,
                     }
 
                     // delete stuff I don't need anymore
-                    std::vector<int>().swap(prune_check);
-                    std::vector<int>().swap(assoc);
+                    //std::vector<int>().swap(prune_check);
+                    //std::vector<int>().swap(assoc);
                 }
 
                 findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,

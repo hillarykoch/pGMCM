@@ -180,6 +180,8 @@ std::vector<int> cassociate(std::vector<int> path,
         assoc[i] = c[path[i+1]];
     }
 
+    stream.close(); // ok this might work
+
     return assoc;
 }
 
