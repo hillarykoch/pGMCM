@@ -135,7 +135,13 @@ write_LGF <- function(h, d, path) {
 # get paths using LEMON, then convert to latent association vectors
 get_paths <- function(filepath, len_filt_h, nonconsec, mus, labels, n, dist_tol) {
   cat("Finding latent classes...")
-  path_build <- cgetPaths(filepath = filepath, len_filt_h, nonconsec, mus, labels, n, dist_tol)
+  path_build <- cgetPaths(filepath = filepath,
+                          len_filt_h,
+                          nonconsec,
+                          mus,
+                          labels,
+                          n,
+                          dist_tol)
   cat("done!\n")
   path_build
 }
