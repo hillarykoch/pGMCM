@@ -91,14 +91,16 @@ class llist {
         
             // currently not handling exception when list is empty
             node *curr = new node;
-            node *prev = new node;
+            //node *prev = new node;
             curr = head;
             while(curr->next != NULL) { // start at head and iterate over llist
-              prev = curr;
+              //prev = curr;
+              tail=curr;
               curr = curr->next;    
             }
-            tail=prev;
-            prev->next=NULL;
+            //tail=prev;
+            //prev->next=NULL;
+            tail->next=NULL;
             delete curr;
         }
         

@@ -7,9 +7,12 @@
 #include <lemon/dfs.h>
 #include <lemon/adaptors.h>
 #include "pathenumeration.h"
+#include "prune_enhancer.h" // there might be some useful functions in here, even though i've eliminated this method
 
 using namespace lemon;
 using namespace std;
+using namespace Rcpp;
+using namespace RcppArmadillo;
 
 void findPath(ListDigraph& gr,
               ListDigraph::Node& src,
@@ -51,11 +54,11 @@ void findPath(ListDigraph& gr,
     } else // IF NUM_PATHS > 0
     {
         // update filter (might want to put this in main and pass by reference)
-        FilterArcs<ListDigraph> subgraph(gr, filter);
-        Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);  
-        int sz;
-        vector<int> temp;
-        ListDigraph::Node old_node;
+        //FilterArcs<ListDigraph> subgraph(gr, filter);
+        //Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);  
+        //int sz;
+        //vector<int> temp;
+        //ListDigraph::Node old_node;
 
         // STOPPING RULE
         while(!(enumeration.len() > 0 && enumeration[0] == src && enumeration.outArcs(enumeration[0]) == 0))
@@ -63,6 +66,11 @@ void findPath(ListDigraph& gr,
             // WHILE THE CURRENT NODE STILL HAS FEASIBLE OUTGOING PATHS
             while(enumeration.outArcs(curr_node) > 0)
             {
+                int sz;
+                vector<int> temp;
+                FilterArcs<ListDigraph> subgraph(gr, filter);
+                Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);  
+
                 // find new path based on filter
                 sub_dfs.run(curr_node, trg);
 
@@ -89,7 +97,8 @@ void findPath(ListDigraph& gr,
                         }
                     }
                 }
-                temp.clear();
+                //temp.clear();
+                std::vector<int>().swap(temp);
                 enumeration.pop_last();
                 curr_node = enumeration[d];
                 
@@ -104,7 +113,7 @@ void findPath(ListDigraph& gr,
             if(curr_node != src)
             {
                 // move_curr_node one back in the path
-                old_node = curr_node;
+                //old_node = curr_node;
                 curr_node = enumeration[layer[curr_node]-1];
 
                 // pop all nodes after curr_node

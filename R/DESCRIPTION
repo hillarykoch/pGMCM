@@ -20,7 +20,10 @@ Imports:
     purrr,
     readr,
     Rcpp (>= 0.12.16),
-    stats
+    stats,
+    testthat
 LinkingTo:
     Rcpp,
     RcppArmadillo
+SystemRequirements:
+    C++11
