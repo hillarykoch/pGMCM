@@ -7,7 +7,8 @@
 #include <lemon/dfs.h>
 #include <lemon/adaptors.h>
 #include "pathenumeration.h"
-#include "prune_enhancer.h" // there might be some useful functions in here, even though i've eliminated this method
+// prune_enhancer.h used to be included here, 
+// there might be some useful functions in here, even though i've eliminated this method
 
 using namespace lemon;
 using namespace std;

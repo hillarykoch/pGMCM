@@ -74,20 +74,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cget_prior_prop
-arma::colvec cget_prior_prop(arma::mat red_class, Rcpp::List mus, Rcpp::List props, int d);
-RcppExport SEXP _pGMCM_cget_prior_prop(SEXP red_classSEXP, SEXP musSEXP, SEXP propsSEXP, SEXP dSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type mus(musSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type props(propsSEXP);
-    Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    rcpp_result_gen = Rcpp::wrap(cget_prior_prop(red_class, mus, props, d));
-    return rcpp_result_gen;
-END_RCPP
-}
 // caccept
 arma::vec caccept(arma::mat x, arma::colvec y);
 RcppExport SEXP _pGMCM_caccept(SEXP xSEXP, SEXP ySEXP) {
@@ -125,6 +111,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type true_assoc(true_assocSEXP);
     rcpp_result_gen = Rcpp::wrap(cget_true_assoc_idx(red_class, true_assoc));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cassociate
+arma::mat cassociate(arma::mat& paths, std::string filepath, int len_filt_h);
+RcppExport SEXP _pGMCM_cassociate(SEXP pathsSEXP, SEXP filepathSEXP, SEXP len_filt_hSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type paths(pathsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filepath(filepathSEXP);
+    Rcpp::traits::input_parameter< int >::type len_filt_h(len_filt_hSEXP);
+    rcpp_result_gen = Rcpp::wrap(cassociate(paths, filepath, len_filt_h));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -536,10 +535,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_cpaste0", (DL_FUNC) &_pGMCM_cpaste0, 1},
     {"_pGMCM_cstr_split", (DL_FUNC) &_pGMCM_cstr_split, 2},
     {"_pGMCM_trans_func", (DL_FUNC) &_pGMCM_trans_func, 1},
-    {"_pGMCM_cget_prior_prop", (DL_FUNC) &_pGMCM_cget_prior_prop, 4},
     {"_pGMCM_caccept", (DL_FUNC) &_pGMCM_caccept, 2},
     {"_pGMCM_cget_prior_count", (DL_FUNC) &_pGMCM_cget_prior_count, 6},
     {"_pGMCM_cget_true_assoc_idx", (DL_FUNC) &_pGMCM_cget_true_assoc_idx, 2},
+    {"_pGMCM_cassociate", (DL_FUNC) &_pGMCM_cassociate, 3},
     {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_SCAD_1d", (DL_FUNC) &_pGMCM_SCAD_1d, 4},
     {"_pGMCM_double_SCAD_1d", (DL_FUNC) &_pGMCM_double_SCAD_1d, 3},

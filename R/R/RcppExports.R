@@ -25,10 +25,6 @@ trans_func <- function(x) {
     .Call(`_pGMCM_trans_func`, x)
 }
 
-cget_prior_prop <- function(red_class, mus, props, d) {
-    .Call(`_pGMCM_cget_prior_prop`, red_class, mus, props, d)
-}
-
 caccept <- function(x, y) {
     .Call(`_pGMCM_caccept`, x, y)
 }
@@ -39,6 +35,10 @@ cget_prior_count <- function(red_class, mus, labels, d, n, dist_tol = 0L) {
 
 cget_true_assoc_idx <- function(red_class, true_assoc) {
     .Call(`_pGMCM_cget_true_assoc_idx`, red_class, true_assoc)
+}
+
+cassociate <- function(paths, filepath, len_filt_h) {
+    .Call(`_pGMCM_cassociate`, paths, filepath, len_filt_h)
 }
 
 abs3 <- function(val) {

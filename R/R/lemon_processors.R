@@ -128,31 +128,23 @@ write_LGF <- function(h, d, path) {
 get_paths <- function(filepath) {
     cat("Finding latent classes...")
     path_build <- cgetPaths(filepath = filepath)
-    # +  path_build <- cgetPaths(filepath = filepath,
-    #                            +                          len_filt_h,
-    #                            +                          nonconsec,
-    #                            +                          mus,
-    #                            +                          labels,
-    #                            +                          n,
-    #                            +                          dist_tol)
-    #
     cat("done!\n")
     path_build
 }
 
-# Convert node labels back to associations
-associate <- function(paths, filepath, filt_h) {
-    node <- read_table2(
-        file = filepath,
-        skip = 1,
-        col_names = TRUE,
-        n_max = length(unlist(filt_h)) + 2
-    )
-
-    assoc_mx <-
-        matrix(data = node[paths + 1,]$assoc, nrow = nrow(paths))
-    assoc_mx <- assoc_mx[, 2:(ncol(assoc_mx) - 1)]
-}
+# # Convert node labels back to associations
+# associate <- function(paths, filepath, filt_h) {
+#     node <- read_table2(
+#         file = filepath,
+#         skip = 1,
+#         col_names = TRUE,
+#         n_max = length(unlist(filt_h)) + 2
+#     )
+#
+#     assoc_mx <-
+#         matrix(data = node[paths + 1,]$assoc, nrow = nrow(paths))
+#     assoc_mx <- assoc_mx[, 2:(ncol(assoc_mx) - 1)]
+# }
 
 # Prune paths that are discordant with "non-consecutive" pairwise estimates
 # Can probably borrow old C code for this part
@@ -183,20 +175,8 @@ get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
     write_LGF(h, d, filepath)
     paths <- get_paths(filepath)
 
-    # +  paths <- get_paths(
-    #     +    filepath,
-    #     +    length(unlist(filt)),
-    #     +    get_consecutive(h, non_consec = TRUE),
-    #     +    map(fits, "mu"),
-    #     +    map(fits, "cluster") %>% simplify2array(),
-    #     +    n,
-    #     +    dist_tol
-    #     +  )
-
-    assoc <- associate(paths, filepath, filt_h = filt)
-    prune_paths(h, assoc) # can probably replace this with C code
-    # i.e.  assoc = cassociate(prune_check, filepath, len_filt_h); // get the association value from node number
-
+    assoc <- cassociate(paths, filepath, length(unlist(filt)))
+    prune_paths(h, assoc) # can probably replace this with C code, cprune_paths
 }
 
 # Among all reduced classes, get the indices which correspond to the truth
