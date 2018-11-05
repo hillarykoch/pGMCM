@@ -281,7 +281,8 @@ fpGMCM <-
              lambda = NULL,
              tol = 1e-06,
              stepmax = 50,
-             itermax = 200) {
+             itermax = 200,
+             ties_method = "random") {
         # x: a matrix of data with rows for observations and columns for features
         # kmax: max number of clusters
         n <- nrow(x)   # sample size
@@ -315,7 +316,7 @@ fpGMCM <-
 
         # Rescale empirical marginal distribution functions to avoid infinities
         u <- apply(x, 2, function(X)
-            rank(X) / (n + 1)) %>%
+            rank(X, ties.method = ties_method) / (n + 1)) %>%
             data.frame %>%
             setNames(sapply(seq(d), function(X)
                 paste0("u.", X)))
@@ -409,7 +410,8 @@ fconstr_pGMCM <- function(x,
                           itermax = 200,
                           convCrit = "GMM",
                           penaltyType = c("SCAD", "LASSO"),
-                          trace_params = FALSE) {
+                          trace_params = FALSE,
+                          ties_method = "random") {
     # x: a matrix of data with rows for observations and columns for features
     n <- nrow(x)   # sample size
     d <- ncol(x)   # dimension
@@ -443,7 +445,7 @@ fconstr_pGMCM <- function(x,
 
     # Rescale empirical marginal distribution functions to avoid infinities
     u <- apply(x, 2, function(X)
-        rank(X) / (n + 1)) %>%
+        rank(X, ties.method = ties_method) / (n + 1)) %>%
         data.frame %>%
         setNames(sapply(seq(d), function(X)
             paste0("u.", X)))
@@ -584,7 +586,8 @@ fconstr0_pGMCM <-
              stepmax = 50,
              itermax = 200,
              convCrit = "GMM",
-             trace_params = FALSE) {
+             trace_params = FALSE,
+             ties_method = "random") {
         # x: a matrix of data with rows for observations and columns for features
         n <- nrow(x)   # sample size
         d <- ncol(x)   # dimension
@@ -612,7 +615,7 @@ fconstr0_pGMCM <-
 
         # Rescale empirical marginal distribution functions to avoid infinities
         u <- apply(x, 2, function(X)
-            rank(X) / (n + 1)) %>%
+            rank(X, ties.method = ties_method) / (n + 1)) %>%
             data.frame %>%
             setNames(sapply(seq(d), function(X)
                 paste0("u.", X)))
