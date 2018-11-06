@@ -35,7 +35,6 @@ get_constr_sigma <- function(Sigma, rho, idx) {
             }
         }
     }
-  }
   Sigma
 }
 

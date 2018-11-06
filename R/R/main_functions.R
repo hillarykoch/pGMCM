@@ -270,7 +270,6 @@ r_assoc <- function(d, num_patterns) {
             count <- count + 1
         }
     }
-  }
   combos
 }
 
@@ -439,9 +438,7 @@ fconstr_pGMCM <- function(x,
                 penaltyType = penaltyType
             )
     }
-  } else {
-    init <- fconstr_pGMM(x, lambda = c(.1, 0, 1), tol = 1e-04, itermax = 200, penaltyType = penaltyType)
-  }
+
   prop0 <- init$prop
   mu0 <- init$mu
   sigma0 <- init$sigma
@@ -567,7 +564,7 @@ fconstr_pGMCM <- function(x,
         if (stp == stepmax + 1) {
             warning("Maximum number of steps reached before convergence.")
         }
-        setTxtProgressBar(pb, i)
+        setTxtProgressBar(pb, stp)
     }
     best_stp <- which.max(ll.tr["gmcm_ll", ])
 

@@ -20,13 +20,13 @@ using namespace std;
 
 // Collect output from my algorithm
 // [[Rcpp::export]]
-arma::mat cgetPaths(std::string filepath,
-                    int len_filt_h,
-                    Rcpp::List nonconsec,
-                    Rcpp::List mus,
-                    arma::mat labels,
-                    int n,
-                    int dist_tol) {
+arma::mat cgetPaths(std::string filepath) {//,
+//                    int len_filt_h,
+//                    Rcpp::List nonconsec,
+//                    Rcpp::List mus,
+//                    arma::mat labels,
+//                    int n,
+//                    int dist_tol) {
     ListDigraph gr;
     ListDigraph::NodeMap<int> dim(gr);
     ListDigraph::NodeMap<int> label(gr);
@@ -63,11 +63,8 @@ arma::mat cgetPaths(std::string filepath,
     int num_paths = 0; // when not 0, enter a different section of "findPath" function
     PathEnumeration enumeration(gr, src, trg);
 
-    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
-                curr_node, layer, filepath, len_filt_h, nonconsec, mus,
-                labels, n, dist_tol);
+    findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter, curr_node, layer);
 
-    // need to write this function
     num_paths = (all_paths.size())/(d+2);
     arma::mat out(d+2, num_paths, arma::fill::none);
     for(auto i = 0; i < all_paths.size(); i++) {
@@ -94,8 +91,13 @@ arma::uvec crowMatch(arma::mat assoc, arma::mat nonconsec) {
             }
         }
     }
-
     return keepers;
+}
+
+// Get names of an Rcpp::List
+// [[Rcpp::export]]
+std::vector<std::string> get_list_names(Rcpp::List L) {
+    return L.names();
 }
 
 // // Get prior probabilities for mixing prop expected values from empirical fitting results

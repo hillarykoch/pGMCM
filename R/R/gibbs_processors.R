@@ -85,18 +85,6 @@ mixprop_traceplot <- function(param.tr, class_num = "all", ...) {
             ...
         )
     }
-  } else {
-    plot(purrr::map(param.tr, "mix_prop") %>%
-      purrr::map(class_num) %>%
-      unlist(),
-    type = "l",
-    xlab = "iteration",
-    ylab = substitute(pi[.(class_num)]),
-    ylim = c(0, 1),
-    main = "",
-    ...
-    )
-  }
 }
 
 mean_post_density_plot <- function(param.tr, class_num, dim, ...) {
@@ -201,7 +189,6 @@ relabel <- function(consensus_labels, red_class, true_assoc) {
             }
         }
     }
-  }
 
     # Account for classes that are not actually part of the true association patterns
     naidx <- is.na(reorders)
@@ -213,6 +200,5 @@ relabel <- function(consensus_labels, red_class, true_assoc) {
     for (i in seq(nrow(red_class))) {
         relabels[consensus_labels == i] <- reorders[i]
     }
-
   relabels
 }

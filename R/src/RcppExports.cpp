@@ -7,19 +7,13 @@
 using namespace Rcpp;
 
 // cgetPaths
-arma::mat cgetPaths(std::string filepath, int len_filt_h, Rcpp::List nonconsec, Rcpp::List mus, arma::mat labels, int n, int dist_tol);
-RcppExport SEXP _pGMCM_cgetPaths(SEXP filepathSEXP, SEXP len_filt_hSEXP, SEXP nonconsecSEXP, SEXP musSEXP, SEXP labelsSEXP, SEXP nSEXP, SEXP dist_tolSEXP) {
+arma::mat cgetPaths(std::string filepath);
+RcppExport SEXP _pGMCM_cgetPaths(SEXP filepathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type filepath(filepathSEXP);
-    Rcpp::traits::input_parameter< int >::type len_filt_h(len_filt_hSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type nonconsec(nonconsecSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type mus(musSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type labels(labelsSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type dist_tol(dist_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(cgetPaths(filepath, len_filt_h, nonconsec, mus, labels, n, dist_tol));
+    rcpp_result_gen = Rcpp::wrap(cgetPaths(filepath));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -32,45 +26,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type assoc(assocSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type nonconsec(nonconsecSEXP);
     rcpp_result_gen = Rcpp::wrap(crowMatch(assoc, nonconsec));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cget_prior_count
-arma::colvec cget_prior_count(arma::mat red_class, Rcpp::List mus, arma::mat labels, int d, int n, int dist_tol);
-RcppExport SEXP _pGMCM_cget_prior_count(SEXP red_classSEXP, SEXP musSEXP, SEXP labelsSEXP, SEXP dSEXP, SEXP nSEXP, SEXP dist_tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type mus(musSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type labels(labelsSEXP);
-    Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type dist_tol(dist_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(cget_prior_count(red_class, mus, labels, d, n, dist_tol));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cget_true_assoc_idx
-arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc);
-RcppExport SEXP _pGMCM_cget_true_assoc_idx(SEXP red_classSEXP, SEXP true_assocSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type true_assoc(true_assocSEXP);
-    rcpp_result_gen = Rcpp::wrap(cget_true_assoc_idx(red_class, true_assoc));
-    return rcpp_result_gen;
-END_RCPP
-}
-// trans_func
-int trans_func(double& x);
-RcppExport SEXP _pGMCM_trans_func(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(trans_func(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -108,6 +63,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// trans_func
+int trans_func(double& x);
+RcppExport SEXP _pGMCM_trans_func(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(trans_func(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // caccept
 arma::vec caccept(arma::mat x, arma::colvec y);
 RcppExport SEXP _pGMCM_caccept(SEXP xSEXP, SEXP ySEXP) {
@@ -120,44 +86,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// caccept
-arma::vec caccept(arma::mat x, arma::colvec y);
-RcppExport SEXP _pGMCM_caccept(SEXP xSEXP, SEXP ySEXP) {
+// cget_prior_count
+arma::colvec cget_prior_count(arma::mat red_class, Rcpp::List mus, arma::mat labels, int d, int n, int dist_tol);
+RcppExport SEXP _pGMCM_cget_prior_count(SEXP red_classSEXP, SEXP musSEXP, SEXP labelsSEXP, SEXP dSEXP, SEXP nSEXP, SEXP dist_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type nonconsec(nonconsecSEXP);
-    Rcpp::traits::input_parameter< std::vector<int> >::type assoc(assocSEXP);
-    rcpp_result_gen = Rcpp::wrap(cprune_path(nonconsec, assoc));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cassociate
-std::vector<int> cassociate(std::vector<int> path, std::string filepath, int len_filt_h);
-RcppExport SEXP _pGMCM_cassociate(SEXP pathSEXP, SEXP filepathSEXP, SEXP len_filt_hSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<int> >::type path(pathSEXP);
-    Rcpp::traits::input_parameter< std::string >::type filepath(filepathSEXP);
-    Rcpp::traits::input_parameter< int >::type len_filt_h(len_filt_hSEXP);
-    rcpp_result_gen = Rcpp::wrap(cassociate(path, filepath, len_filt_h));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cprune_path2
-double cprune_path2(std::vector<int> assoc, Rcpp::List mus, arma::mat labels, int d, int n, int dist_tol);
-RcppExport SEXP _pGMCM_cprune_path2(SEXP assocSEXP, SEXP musSEXP, SEXP labelsSEXP, SEXP dSEXP, SEXP nSEXP, SEXP dist_tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<int> >::type assoc(assocSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type mus(musSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type labels(labelsSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type dist_tol(dist_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(cprune_path2(assoc, mus, labels, d, n, dist_tol));
+    rcpp_result_gen = Rcpp::wrap(cget_prior_count(red_class, mus, labels, d, n, dist_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cget_true_assoc_idx
+arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc);
+RcppExport SEXP _pGMCM_cget_true_assoc_idx(SEXP red_classSEXP, SEXP true_assocSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type red_class(red_classSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type true_assoc(true_assocSEXP);
+    rcpp_result_gen = Rcpp::wrap(cget_true_assoc_idx(red_class, true_assoc));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -576,11 +529,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_pGMCM_cgetPaths", (DL_FUNC) &_pGMCM_cgetPaths, 7},
+    {"_pGMCM_cgetPaths", (DL_FUNC) &_pGMCM_cgetPaths, 1},
     {"_pGMCM_crowMatch", (DL_FUNC) &_pGMCM_crowMatch, 2},
-    {"_pGMCM_cget_prior_count", (DL_FUNC) &_pGMCM_cget_prior_count, 6},
-    {"_pGMCM_cget_true_assoc_idx", (DL_FUNC) &_pGMCM_cget_true_assoc_idx, 2},
-    {"_pGMCM_trans_func", (DL_FUNC) &_pGMCM_trans_func, 1},
     {"_pGMCM_get_list_names", (DL_FUNC) &_pGMCM_get_list_names, 1},
     {"_pGMCM_cpaste0", (DL_FUNC) &_pGMCM_cpaste0, 1},
     {"_pGMCM_cstr_split", (DL_FUNC) &_pGMCM_cstr_split, 2},

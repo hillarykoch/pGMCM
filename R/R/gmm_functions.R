@@ -102,7 +102,6 @@ fpGMM <- function(x,
             post_prob <- curGMM$post_prob
         }
     }
-  }
 
     list(
         "k" = k_out,
@@ -249,7 +248,6 @@ fconstr_pGMM <-
             "post_prob" = post_prob,
             "combos" = combos_out
         )
-    }
   }
 
 # choose the corresponding lambda of max BIC in constrained penalized GMM and get best estimates
@@ -386,5 +384,4 @@ fconstr0_pGMM <-
             "ll" = ll_out,
             "post_prob" = post_prob
         )
-    }
   }

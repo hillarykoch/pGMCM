@@ -49,15 +49,12 @@ get_hyperparams <- function(fits, d, red_class) {
                 muvec[count] <- submu[submu != 0][1]
                 sigmavec[count] <- subsigma[subsigma != 1][1]
                 count <- count + 1
+                }
             }
-        }
         mu0_temp[i] <- mean(muvec)
         Psi0_temp[i, i] <-
             mean(sigmavec) # This covariance probably isnt correct
-    }
-    mu0_temp[i] <- mean(muvec)
-    Psi0_temp[i, i] <- mean(sigmavec) # This covariance probably isnt correct
-  }
+        }
 
     for (i in seq(nrow(spl))) {
         # This covariance probably isnt correct
@@ -100,7 +97,6 @@ get_hyperparams <- function(fits, d, red_class) {
             }
         }
     }
-  }
   list("mu0" = mu0, "Psi0" = Psi0)
 }
 
