@@ -11,9 +11,8 @@ data(true_association)
 d <- 3
 n <- nrow(sim$data)
 filepath = "/Users/hillarykoch/Box Sync/School/research - Qunhua/Project_2/scripts/lgf.txt"
-#red_class <- get_reduced_classes(fits, d, filepath=filepath)
-red_class <- get_reduced_classes(fits, n, d, filepath=filepath, dist_tol = 0)
-prior_prop <- get_prior_prop(red_class, fits, d, n)
+red_class <- get_reduced_classes(fits, d, filepath=filepath)
+prior_prop <- get_prior_prop(red_class, fits, d, n, dist_tol = 0)
 
 trueidx <- get_true_assoc_idx(red_class, true_assoc)
 pal <- get_pals(1)

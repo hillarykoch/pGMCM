@@ -120,22 +120,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// caccept2
-arma::vec caccept2(arma::mat x, double y1, double y2);
-RcppExport SEXP _pGMCM_caccept2(SEXP xSEXP, SEXP y1SEXP, SEXP y2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< double >::type y1(y1SEXP);
-    Rcpp::traits::input_parameter< double >::type y2(y2SEXP);
-    rcpp_result_gen = Rcpp::wrap(caccept2(x, y1, y2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cprune_path
-bool cprune_path(Rcpp::List nonconsec, std::vector<int> assoc);
-RcppExport SEXP _pGMCM_cprune_path(SEXP nonconsecSEXP, SEXP assocSEXP) {
+// caccept
+arma::vec caccept(arma::mat x, arma::colvec y);
+RcppExport SEXP _pGMCM_caccept(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -171,6 +158,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type dist_tol(dist_tolSEXP);
     rcpp_result_gen = Rcpp::wrap(cprune_path2(assoc, mus, labels, d, n, dist_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cassociate
+arma::mat cassociate(arma::mat& paths, std::string filepath, int len_filt_h);
+RcppExport SEXP _pGMCM_cassociate(SEXP pathsSEXP, SEXP filepathSEXP, SEXP len_filt_hSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type paths(pathsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filepath(filepathSEXP);
+    Rcpp::traits::input_parameter< int >::type len_filt_h(len_filt_hSEXP);
+    rcpp_result_gen = Rcpp::wrap(cassociate(paths, filepath, len_filt_h));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -584,11 +584,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_get_list_names", (DL_FUNC) &_pGMCM_get_list_names, 1},
     {"_pGMCM_cpaste0", (DL_FUNC) &_pGMCM_cpaste0, 1},
     {"_pGMCM_cstr_split", (DL_FUNC) &_pGMCM_cstr_split, 2},
+    {"_pGMCM_trans_func", (DL_FUNC) &_pGMCM_trans_func, 1},
     {"_pGMCM_caccept", (DL_FUNC) &_pGMCM_caccept, 2},
-    {"_pGMCM_caccept2", (DL_FUNC) &_pGMCM_caccept2, 3},
-    {"_pGMCM_cprune_path", (DL_FUNC) &_pGMCM_cprune_path, 2},
+    {"_pGMCM_cget_prior_count", (DL_FUNC) &_pGMCM_cget_prior_count, 6},
+    {"_pGMCM_cget_true_assoc_idx", (DL_FUNC) &_pGMCM_cget_true_assoc_idx, 2},
     {"_pGMCM_cassociate", (DL_FUNC) &_pGMCM_cassociate, 3},
-    {"_pGMCM_cprune_path2", (DL_FUNC) &_pGMCM_cprune_path2, 6},
     {"_pGMCM_abs3", (DL_FUNC) &_pGMCM_abs3, 1},
     {"_pGMCM_SCAD_1d", (DL_FUNC) &_pGMCM_SCAD_1d, 4},
     {"_pGMCM_double_SCAD_1d", (DL_FUNC) &_pGMCM_double_SCAD_1d, 3},

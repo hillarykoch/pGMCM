@@ -8,7 +8,8 @@
 #include <lemon/dfs.h>
 #include <lemon/adaptors.h>
 #include "pathenumeration.h"
-#include "prune_enhancer.h"
+// prune_enhancer.h used to be included here, 
+// there might be some useful functions in here, even though i've eliminated this method
 
 using namespace lemon;
 using namespace std;
@@ -101,8 +102,12 @@ void findPath(ListDigraph& gr,
                     labels, n, dist_tol, prune_bool, emp_prop);
     } else // IF NUM_PATHS > 0
     {
-        //vector<int> prune_check;
-        //std::vector<int> assoc;
+        // update filter (might want to put this in main and pass by reference)
+        //FilterArcs<ListDigraph> subgraph(gr, filter);
+        //Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);  
+        //int sz;
+        //vector<int> temp;
+        //ListDigraph::Node old_node;
 
         // STOPPING RULE
         while(!(enumeration.len() > 0 && enumeration[0] == src && enumeration.outArcs(enumeration[0]) == 0))
@@ -110,12 +115,13 @@ void findPath(ListDigraph& gr,
             // WHILE THE CURRENT NODE STILL HAS FEASIBLE OUTGOING PATHS
             while(enumeration.outArcs(curr_node) > 0)
             {
-                {   // define a scope
-                    // update filter (might want to put this in main and pass by reference)
-                    FilterArcs<ListDigraph> subgraph(gr, filter);
-                    Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);
-                    vector<int> temp;
-                    int sz;
+                int sz;
+                vector<int> temp;
+                FilterArcs<ListDigraph> subgraph(gr, filter);
+                Dfs<FilterArcs<ListDigraph> > sub_dfs(subgraph);  
+
+                // find new path based on filter
+                sub_dfs.run(curr_node, trg);
 
                     // find new path based on filter
                     sub_dfs.run(curr_node, trg);
@@ -189,6 +195,10 @@ void findPath(ListDigraph& gr,
                     std::vector<int>().swap(assoc);
                     std::vector<int>().swap(temp);
                 }
+                //temp.clear();
+                std::vector<int>().swap(temp);
+                enumeration.pop_last();
+                curr_node = enumeration[d];
                 
                 findPath(gr, src, trg, enumeration, d, num_paths, all_paths, filter,
                     curr_node, layer, filepath, len_filt_h, nonconsec, mus,
@@ -199,9 +209,9 @@ void findPath(ListDigraph& gr,
             // OTHERWISE, JUST EXIT
             if(curr_node != src)
             {
-                {   // define a scope
-                    // move_curr_node one back in the path
-                    curr_node = enumeration[layer[curr_node]-1];
+                // move_curr_node one back in the path
+                //old_node = curr_node;
+                curr_node = enumeration[layer[curr_node]-1];
 
                     // pop all nodes after curr_node
                     for(int i = layer[curr_node]; i < enumeration.len()-1; i++)

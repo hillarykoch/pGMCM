@@ -1,8 +1,15 @@
 # pGMCM: Analysis with penalized Gaussian mixture copula models
 
-
 ## Dependencies
 1.  To use the full extent of this package, you need to download the C++ library LEMON graph library; [download it here.](https://lemon.cs.elte.hu/trac/lemon/wiki/Downloads)
+
+If you do not have them already, you do not need all of LEMON's dependencies to run the pGMCM package. To ease this during configuring LEMON, you can go into the INSTALL file after downloading LEMON and add options
+
+```
+-DLEMON_ENABLE_GLPK=NO
+-DLEMON_ENABLE_COIN=NO
+-DLEMON_ENABLE_ILOG=NO
+```
 
 <!---
 LEMON citation:
@@ -25,7 +32,7 @@ library(pGMCM)
 
 ## About the software
 <!---
-The GMCM is a copula mixture that generalizes to any dimension. This package implements a general form of the pGMCM as well as a constrained version. It also implements a general and similarly constrained penalized Gaussian mixture model. The penalization allows for selection of the number of clusters, subject to a user-selected upper bound.
+ The GMCM is a copula mixture that generalizes to any dimension. This package implements a general form of the pGMCM as well as a constrained version. It also implements a general and similarly constrained penalized Gaussian mixture model. The penalization allows for selection of the number of clusters, subject to a user-selected upper bound.
 -->
 
 General case, with user-selected upper bound 10:
@@ -36,5 +43,3 @@ Constrained case with 9 components, with user-selected upper bound 9:
 
 Constrained with 4 components, with user-selected upper bound 9:
 ![subnine](subnine.png)
-
-

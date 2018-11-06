@@ -37,12 +37,8 @@ caccept <- function(x, y) {
     .Call(`_pGMCM_caccept`, x, y)
 }
 
-caccept2 <- function(x, y1, y2) {
-    .Call(`_pGMCM_caccept2`, x, y1, y2)
-}
-
-cprune_path <- function(nonconsec, assoc) {
-    .Call(`_pGMCM_cprune_path`, nonconsec, assoc)
+caccept <- function(x, y) {
+    .Call(`_pGMCM_caccept`, x, y)
 }
 
 cassociate <- function(path, filepath, len_filt_h) {
@@ -51,6 +47,10 @@ cassociate <- function(path, filepath, len_filt_h) {
 
 cprune_path2 <- function(assoc, mus, labels, d, n, dist_tol) {
     .Call(`_pGMCM_cprune_path2`, assoc, mus, labels, d, n, dist_tol)
+}
+
+cassociate <- function(paths, filepath, len_filt_h) {
+    .Call(`_pGMCM_cassociate`, paths, filepath, len_filt_h)
 }
 
 abs3 <- function(val) {

@@ -95,13 +95,12 @@ class llist {
             curr = head;
             while(curr->next != NULL) { // start at head and iterate over llist
               //prev = curr;
-              tail = curr;
+              tail=curr;
               curr = curr->next;    
             }
             //tail=prev;
-            //delete prev; // added this to hopefully free some memory
-            tail->next=NULL; // used to say tail->next=NULL;
-
+            //prev->next=NULL;
+            tail->next=NULL;
             delete curr;
         }
         

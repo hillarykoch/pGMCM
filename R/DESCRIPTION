@@ -21,6 +21,7 @@ Imports:
     readr,
     Rcpp (>= 0.12.16),
     stats,
+    stringr,
     testthat
 LinkingTo:
     Rcpp,
