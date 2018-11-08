@@ -290,15 +290,13 @@ fpGMCM <-
 
         # initialize with pGMM
         if (!is.null(lambda)) {
-            if (all(lambda == 0)) {
-                init <- fpGMM(
-                    x,
-                    kmax,
-                    lambda = 0,
-                    tol = 1e-04,
-                    itermax = 200
-                )
-            }
+            init <- fpGMM(
+                x,
+                kmax,
+                lambda = 0,
+                tol = 1e-04,
+                itermax = 200
+            )
         } else{
             init <- fpGMM(
                 x,
@@ -418,16 +416,14 @@ fconstr_pGMCM <- function(x,
 
     # initialize with pGMM
     if (!is.null(lambda)) {
-        if (all(lambda == 0)) {
-            init <-
-                fconstr_pGMM(
-                    x,
-                    lambda = 0,
-                    tol = 1e-04,
-                    itermax = 200,
-                    penaltyType = penaltyType
-                )
-        }
+        init <-
+            fconstr_pGMM(
+                x,
+                lambda = lambda,
+                tol = 1e-04,
+                itermax = 200,
+                penaltyType = penaltyType
+            )
     } else{
         init <-
             fconstr_pGMM(
@@ -595,12 +591,10 @@ fconstr0_pGMCM <-
 
         # initialize with pGMM
         if (!is.null(lambda)) {
-            if (all(lambda == 0)) {
-                init <- fconstr0_pGMM(x,
-                                      lambda = 0,
-                                      tol = 1e-04,
-                                      itermax = 200)
-            }
+            init <- fconstr0_pGMM(x,
+                                  lambda = 0,
+                                  tol = 1e-04,
+                                  itermax = 200)
         } else{
             init <- fconstr0_pGMM(
                 x,
