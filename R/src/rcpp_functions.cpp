@@ -142,7 +142,7 @@ Rcpp::List cfpGMM(arma::mat& x,
     arma::mat prob0(n, k, arma::fill::none);
     arma::mat h_est(n, k, arma::fill::none);
     //double thresh = 1/(log(n) * sqrt(n));
-    double thresh = 1E-04;
+    double thresh = 1E-03;
 
     for(int step = 0; step < citermax; ++step) {
         // E step
@@ -364,7 +364,7 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
     arma::colvec err_test =  { NA_REAL };
 
     //double thresh = 1/ (log(n) * sqrt(n)); // for eliminating clusters
-    double thresh = 1E-04;
+    double thresh = 1E-03;
 
     for(int step = 0; step < citermax; ++step) {
         // E step
@@ -719,7 +719,7 @@ Rcpp::List cfconstr0_pGMM(arma::mat& x,
     arma::rowvec tmp_mu(d, arma::fill::none);
     arma::rowvec prop_new;
     //double thresh = 1/(log(n) * sqrt(n));
-    double thresh = 1E-04;
+    double thresh = 1E-03;
 
     for(int step = 0; step < citermax; ++step) {
         // E step
