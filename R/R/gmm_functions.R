@@ -194,7 +194,7 @@ fconstr_pGMM <-
         LASSO <- ifelse(all(penaltyType == "LASSO"), 1, 0)
         for (i in seq_along(lambda)) {
             # estimate penalized GMM for a given lambda
-            tryCatch(expr = curGMM <- cfconstr_pGMM(
+            curGMM <- cfconstr_pGMM(
                 x = x,
                 prop = prop0,
                 mu = mu0,
@@ -207,11 +207,9 @@ fconstr_pGMM <-
                 citermax = itermax,
                 tol = tol,
                 LASSO = LASSO
-            ), error = function(err) NA)
+            )
             
-            if(is.na(curGMM)) {
-                next
-            } else if (!any(names(curGMM) == "optim_err")) {
+            if (!any(names(curGMM) == "optim_err")) {
                 ll_temp <- curGMM$ll
                 df_temp <- curGMM$df
                 BIC  <- sum(ll_temp) - sum(df_temp) * log(n) / 2
