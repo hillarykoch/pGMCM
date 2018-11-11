@@ -131,6 +131,9 @@ draw_NIW <- function(x, hyp, z) {
                     lambda = hyp$kappa[X] + nz[X],
                     nu = hyp$kappa[X] + nz[X],
                     S = hyp$hyp$Psi0[, , X] * kappa[X] +
+                        # sapply(seq(sum(z == X)), function(Y)
+                        #     outer(as.matrix(x)[z == X, ][Y, ] - xbar[as.character(X),], as.matrix(x)[z == X, ][Y, ] - xbar[as.character(X),]), simplify = FALSE) %>%
+                        # purrr::reduce(`+`) +
                         t(as.matrix(x)[z==X,] - xbar[as.character(X),]) %*% (as.matrix(x)[z==X,] - xbar[as.character(X),]) +
                         (kappa[X] * nz[X]) / (kappa[X] + nz[X]) *
                         outer(xbar[as.character(X),] - hyp$hyp$mu0[X,],
@@ -142,6 +145,9 @@ draw_NIW <- function(x, hyp, z) {
                     lambda = hyp$kappa[X] + nz[X],
                     nu = hyp$kappa[X] + nz[X],
                     S = hyp$hyp$Psi0[, , X] * kappa[X] +
+                        # sapply(seq(sum(z == X)), function(Y)
+                        #     outer(as.matrix(x)[z == X, ][Y, ] - xbar, as.matrix(x)[z == X, ][Y, ] - xbar), simplify = FALSE) %>%
+                        # purrr::reduce(`+`) +
                         t(as.matrix(x)[z==X,] - xbar) %*% (as.matrix(x)[z==X,] - xbar) +
                         (kappa[X] * nz[X]) / (kappa[X] + nz[X]) *
                         outer(xbar - hyp$hyp$mu0[X,], xbar - hyp$hyp$mu0[X,])
@@ -182,7 +188,7 @@ run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
     hyp <-
         list("kappa" = kappa, "hyp" = get_hyperparams(fits, d, red_class))
     prop0 <-
-        draw_mix_prop(alpha = prior_prop, z = z_init)
+        draw_mix_prop(alpha = n*prior_prop, z = z_init)
     NIW <- draw_NIW(x, hyp, z_init)
 
     z <- updatez(x, NIW, prop0)
@@ -197,7 +203,7 @@ run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
                          max = nsamp,
                          style = 3)
     for (i in 2:nsamp) {
-        mix_prop <- draw_mix_prop(prior_prop, param.tr[[i - 1]]$z)
+        mix_prop <- draw_mix_prop(n*prior_prop, param.tr[[i - 1]]$z)
         NIW <- draw_NIW(x, hyp, param.tr[[i - 1]]$z)
         zstar <- updatez(x, NIW, param.tr[[i - 1]]$mix_prop)
         param.tr[[i]] <-
@@ -212,7 +218,6 @@ run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
 }
 
 # extend a gibbs sampler that has already been run for some number of iterations
-# This is out of date
 extend_gibbs <-
     function(param.tr,
              x,
