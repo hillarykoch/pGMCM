@@ -104,7 +104,7 @@ arma::vec Mahalanobis(arma::mat x, arma::rowvec mu, arma::mat sigma){
     for (int i=0; i < n; i++) {
         x_cen.row(i) = x.row(i) - mu;
     }
-    return sum((x_cen* sigma.i()) % x_cen, 1);
+    return sum((x_cen* sigma.i()) % x_cen, 1); // can probably change sigma.i() to inversion for positive semi-definite matrices (for speed!)
 }
 
 // Compute density of multivariate normal
@@ -244,11 +244,11 @@ arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos,
     for(int i = 0; i < d-1; ++i){
         for(int j = i+1; j < d; ++j){
             if(combos(i) == combos(j) & combos(i) != 0){
-                Sigma(i,j) = rho;
-                Sigma(j,i) = rho;
+                Sigma(i,j) = rho * Sigma(i,i);
+                Sigma(j,i) = rho * Sigma(i,i);
             } else if(combos(i) == -combos(j) & combos(i) != 0){
-                Sigma(i,j) = -rho;
-                Sigma(j,i) = -rho;
+                Sigma(i,j) = -rho * Sigma(i,i);
+                Sigma(j,i) = -rho * Sigma(i,i);
             }
         }
     }
@@ -363,7 +363,6 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
     double term; // for SCAD
     arma::colvec err_test =  { NA_REAL };
 
-    //double thresh = 1/ (log(n) * sqrt(n)); // for eliminating clusters
     double thresh = 1E-03;
 
     for(int step = 0; step < citermax; ++step) {
@@ -718,7 +717,6 @@ Rcpp::List cfconstr0_pGMM(arma::mat& x,
     arma::colvec param_new;
     arma::rowvec tmp_mu(d, arma::fill::none);
     arma::rowvec prop_new;
-    //double thresh = 1/(log(n) * sqrt(n));
     double thresh = 1E-03;
 
     for(int step = 0; step < citermax; ++step) {
