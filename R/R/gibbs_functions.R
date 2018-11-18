@@ -113,7 +113,7 @@ draw_mix_prop <- function(alpha, z) {
 }
 
 # Mean and variance
-draw_NIW <- function(x, hyp, z) {
+draw_NIW <- function(x, hyp, z, nclass) {
     kappa <- hyp$kappa
     nz <- get_kappa(z, nclass)
     xbar <- sapply(seq(ncol(x)), function(X)
@@ -177,13 +177,13 @@ run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
                replace = TRUE,
                size = n,
                prob = prior_prop) # possibly I should be initializing z in a smarter manner
-    kappa <- round(prior_prop * n)
+    kappa <- round(prior_prop * n, nclass)
 
     hyp <-
         list("kappa" = kappa, "hyp" = get_hyperparams(fits, d, red_class))
     prop0 <-
         draw_mix_prop(alpha = prior_prop, z = z_init)
-    NIW <- draw_NIW(x, hyp, z_init)
+    NIW <- draw_NIW(x, hyp, z_init, nclass)
 
     z <- updatez(x, NIW, prop0)
 
@@ -198,7 +198,7 @@ run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
                          style = 3)
     for (i in 2:nsamp) {
         mix_prop <- draw_mix_prop(prior_prop, param.tr[[i - 1]]$z)
-        NIW <- draw_NIW(x, hyp, param.tr[[i - 1]]$z)
+        NIW <- draw_NIW(x, hyp, param.tr[[i - 1]]$z, nclass)
         zstar <- updatez(x, NIW, param.tr[[i - 1]]$mix_prop)
         param.tr[[i]] <-
             list("z" = zstar,
@@ -231,7 +231,7 @@ extend_gibbs <-
 
         mix_prop_star <-
             draw_mix_prop(alpha = prior_prop, z = param.tr[[nsamp_prev]]$z)
-        NIW_star <- draw_NIW(x, hyp, param.tr[[nsamp_prev]]$z)
+        NIW_star <- draw_NIW(x, hyp, param.tr[[nsamp_prev]]$z, nclass)
         zstar <- updatez(x, param.tr[[nsamp_prev]]$NIW)
         param.tr2 <- list()
         param.tr2[[1]] <- list("z" = zstar,
@@ -242,7 +242,7 @@ extend_gibbs <-
                              style = 3)
         for (i in 2:nsamp) {
             mix_prop <- draw_mix_prop(prior_prop, param.tr2[[i - 1]]$z)
-            NIW <- draw_NIW(x, hyp, param.tr2[[i - 1]]$z)
+            NIW <- draw_NIW(x, hyp, param.tr2[[i - 1]]$z, nclass)
             zstar <- updatez(x, NIW)
             param.tr2[[i]] <-
                 list("z" = zstar,
