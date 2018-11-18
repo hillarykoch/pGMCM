@@ -244,11 +244,11 @@ arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos,
     for(int i = 0; i < d-1; ++i){
         for(int j = i+1; j < d; ++j){
             if(combos(i) == combos(j) & combos(i) != 0){
-                Sigma(i,j) = rho//rho * Sigma(i,i);
-                Sigma(j,i) = rho//rho * Sigma(i,i);
+                Sigma(i,j) = rho;//rho * Sigma(i,i);
+                Sigma(j,i) = rho;//rho * Sigma(i,i);
             } else if(combos(i) == -combos(j) & combos(i) != 0){
-                Sigma(i,j) = -rho//-rho * Sigma(i,i);
-                Sigma(j,i) = -rho//-rho * Sigma(i,i);
+                Sigma(i,j) = -rho;//-rho * Sigma(i,i);
+                Sigma(j,i) = -rho;//-rho * Sigma(i,i);
             }
         }
     }
