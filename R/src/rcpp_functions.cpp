@@ -244,11 +244,11 @@ arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos,
     for(int i = 0; i < d-1; ++i){
         for(int j = i+1; j < d; ++j){
             if(combos(i) == combos(j) & combos(i) != 0){
-                Sigma(i,j) = rho;//rho * Sigma(i,i);
-                Sigma(j,i) = rho;//rho * Sigma(i,i);
+                Sigma(i,j) = rho;
+                Sigma(j,i) = rho;
             } else if(combos(i) == -combos(j) & combos(i) != 0){
-                Sigma(i,j) = -rho;//-rho * Sigma(i,i);
-                Sigma(j,i) = -rho;//-rho * Sigma(i,i);
+                Sigma(i,j) = -rho;
+                Sigma(j,i) = -rho;
             }
         }
     }
@@ -296,7 +296,7 @@ double func_to_optim(const arma::colvec& init_val,
         arma::uvec zeroidx = find(combos.row(i) == 0);
         sigma_in.elem(zeroidx).ones();
 
-        tmp_sigma = cget_constr_sigma(sigma_in, rho, combos.row(i), d);
+        tmp_sigma = cget_constr_sigma(sigma_in, rho * sigma, combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
         tmp_mu = mu*combos.row(i);
         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
     }
@@ -406,7 +406,7 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
 
         // transform sigma, rho back
         param_new(1) = exp(param_new(1));
-        param_new(2) = trans_rho_inv(param_new(2));
+        param_new(2) = trans_rho_inv(param_new(1) * param_new(2)); // rho is now definitely a product of sigma * rho
 
         prop_new.set_size(k);
         if(LASSO == 1) {
