@@ -79,3 +79,7 @@ get_pals <- function(pal) {
         )
     )
 }
+
+display_pal <- function(pal) {
+    barplot(rep(1, length(pal)), col = pal, axes = FALSE)
+}
