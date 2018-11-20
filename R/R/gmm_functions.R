@@ -233,21 +233,24 @@ fconstr_pGMM <-
                 combos_out <- curGMM$combos
             }
         }
-
-        list(
-            "k" = k_out,
-            "prop" = prop_out,
-            "mu" = mu_out,
-            "sigma" = sigma_out,
-            "rho" = rho_out,
-            "df" = df_out,
-            "cluster" = cl_out,
-            "BIC" = bestBIC,
-            "lambda" = bestlam,
-            "ll" = ll_out,
-            "post_prob" = post_prob,
-            "combos" = combos_out
-        )
+        
+        # If we never have a valid fit, just return NA for now.
+        tryCatch(
+            expr = list(
+                "k" = k_out,
+                "prop" = prop_out,
+                "mu" = mu_out,
+                "sigma" = sigma_out,
+                "rho" = rho_out,
+                "df" = df_out,
+                "cluster" = cl_out,
+                "BIC" = bestBIC,
+                "lambda" = bestlam,
+                "ll" = ll_out,
+                "post_prob" = post_prob,
+                "combos" = combos_out
+            ),
+            error = function(err) NA)
   }
 
 # choose the corresponding lambda of max BIC in constrained penalized GMM and get best estimates
