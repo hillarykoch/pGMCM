@@ -104,7 +104,8 @@ arma::vec Mahalanobis(arma::mat x, arma::rowvec mu, arma::mat sigma){
     for (int i=0; i < n; i++) {
         x_cen.row(i) = x.row(i) - mu;
     }
-    return sum((x_cen* sigma.i()) % x_cen, 1); // can probably change sigma.i() to inversion for positive semi-definite matrices (for speed!)
+
+    return sum((x_cen * sigma.i()) % x_cen, 1); // can probably change sigma.i() to inversion for positive semi-definite matrices (for speed!)
 }
 
 // Compute density of multivariate normal
@@ -296,7 +297,9 @@ double func_to_optim(const arma::colvec& init_val,
         arma::uvec zeroidx = find(combos.row(i) == 0);
         sigma_in.elem(zeroidx).ones();
 
-        tmp_sigma = cget_constr_sigma(sigma_in, rho * sigma, combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
+        // This std::min part accounts for the possibility that sigma is actually bigger than 1
+        // The -1E-04 is just enforcing strict inequality between rho and sigma
+        tmp_sigma = cget_constr_sigma(sigma_in, std::min(rho * sigma-1E-04, rho-1E-04), combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
         tmp_mu = mu*combos.row(i);
         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
     }
@@ -406,7 +409,8 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
 
         // transform sigma, rho back
         param_new(1) = exp(param_new(1));
-        param_new(2) = trans_rho_inv(param_new(1) * param_new(2)); // rho is now definitely a product of sigma * rho
+        param_new(2) = trans_rho_inv(param_new(2));//
+        param_new(2) = std::min(param_new(2) * param_new(1) - 1E-04, param_new(2) - 1E-04); // rho is now definitely a product of sigma * rho
 
         prop_new.set_size(k);
         if(LASSO == 1) {
