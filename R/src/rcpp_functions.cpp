@@ -261,7 +261,6 @@ arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos,
 double trans_rho(double rho) {
     double out = log(rho + 1) - log(1 - rho);
     return out;
-
 }
 
 // Transform rho to constrain to be in [-1,1]
@@ -280,7 +279,8 @@ double func_to_optim(const arma::colvec& init_val,
 
     double mu = init_val(0);
     double sigma = exp(init_val(1));
-    double rho = trans_rho_inv(init_val(2));
+    //double rho = trans_rho_inv(init_val(2));
+    double rho = init_val(2);
     int n = x.n_rows;
     int d = x.n_cols;
     int k = h_est.n_cols;
@@ -297,11 +297,18 @@ double func_to_optim(const arma::colvec& init_val,
         arma::uvec zeroidx = find(combos.row(i) == 0);
         sigma_in.elem(zeroidx).ones();
 
-        // This std::min part accounts for the possibility that sigma is actually bigger than 1
+        // This min part accounts for the possibility that sigma is actually bigger than 1
         // The -1E-04 is just enforcing strict inequality between rho and sigma
-        tmp_sigma = cget_constr_sigma(sigma_in, std::min(rho * sigma-1E-04, rho-1E-04), combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
+        // arma::colvec rho_option1 = { rho - 1E-04, 0 };
+        // arma::colvec rho_option2 = { rho_option1.max(), rho * sigma - 1E-04 };
+        //tmp_sigma = cget_constr_sigma(sigma_in, rho_option2.min(), combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
+        tmp_sigma = cget_constr_sigma(sigma_in, rho, combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
         tmp_mu = mu*combos.row(i);
         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
+    }
+
+    if( (abs3(rho) >= sigma) || (abs3(rho) >= 1) ) {
+        return std::numeric_limits<double>::infinity();
     }
 
     nll = -accu(h_est % log(pdf_est));
@@ -397,7 +404,8 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
         int idx = repidx(0);
         double mu_in = abs3(mu_old(idx));
         double sigma_in = sigma_old(idx);
-        arma::colvec init_val = arma::colvec({mu_in, log(sigma_in), trans_rho(rho_old)});
+        //arma::colvec init_val = arma::colvec({mu_in, log(sigma_in), trans_rho(rho_old)});
+        arma::colvec init_val = arma::colvec( { mu_in, log(sigma_in), rho_old } );
 
         // Optimize using optim (for now)
         arma::colvec param_new(3, arma::fill::none);
@@ -409,8 +417,7 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
 
         // transform sigma, rho back
         param_new(1) = exp(param_new(1));
-        param_new(2) = trans_rho_inv(param_new(2));//
-        param_new(2) = std::min(param_new(2) * param_new(1) - 1E-04, param_new(2) - 1E-04); // rho is now definitely a product of sigma * rho
+        std::cout << param_new.t();
 
         prop_new.set_size(k);
         if(LASSO == 1) {
@@ -973,24 +980,4 @@ double cll0_gmm(arma::mat& z,
     return accu(log(sum(pdf_est,1)));
 }
 
-// test stuff
-arma::colvec teststuff(arma::mat mu_old, arma::cube Sigma_old, arma::mat combos) {
-    arma::colvec sgn_mu_in = get_mu_optim(mu_old, combos);
-    arma::uvec negidx = find(sgn_mu_in < 0);
-    arma::colvec sigma_in = get_sigma_optim(bind_diags(Sigma_old), combos);
-    arma::colvec rho_in = get_rho_optim(bind_offdiags(Sigma_old), combos);
 
-    for(int i = 0; i < rho_in.n_rows; ++i){
-        rho_in(i) = trans_rho(rho_in(i));
-    }
-
-    int a = sgn_mu_in.n_rows;
-    int b = sigma_in.n_rows;
-    int c = rho_in.n_rows;
-
-    arma::colvec init_val(a+b+c);
-    init_val.subvec(0,a-1) = abs(sgn_mu_in);
-    init_val.subvec(a,a+b-1) = log(sigma_in);
-    init_val.subvec(a+b, a+b+c-1) = rho_in; // = { abs(sgn_mu_in), log(sigma_in), rho_in };
-    return init_val;
-}
