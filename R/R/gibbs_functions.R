@@ -165,7 +165,12 @@ updatez <- function(data, NIW, mix_prop) {
                                      mean = NIW[[X]]$mu,
                                      sigma = NIW[[X]]$Sigma) * mix_prop[X])
 
-    apply(d, 1, function(X) base::sample(seq_along(NIW), 1, prob = X))
+    apply(d, 1, function(X)
+        if(all(X == 0)) {
+            base::sample(seq_along(NIW), 1)
+        } else {
+            base::sample(seq_along(NIW), 1, prob = X) 
+        })
 }
 
 # run the gibbs sampler

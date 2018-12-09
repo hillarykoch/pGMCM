@@ -1,10 +1,19 @@
-propose_prop <- function(prop,
-                         tune_var = 2) {
+propose_prop <- function(prop, tune_var = 2) {
     log_prop <- log(prop)
-    log_proposal <- rmvnorm(1, mean = log_prop, sigma = diag(sqrt(tune_var), length(log_prop)))
-        # sapply(prop, function(X)
-        #     rnorm(1, mean = X, sd = tune_var))
+    log_proposal <-
+        mvtnorm::rmvnorm(1, mean = log_prop, sigma = diag(sqrt(tune_var), length(log_prop)))
+    # sapply(prop, function(X)
+    #     rnorm(1, mean = X, sd = tune_var))
     proposal <- exp(log_proposal)
+    proposal / sum(proposal)
+}
+
+propose_single_prop <- function(prop, index, tune_var = 2) {
+    log_prop <- log(prop)
+    log_proposal <-
+        rnorm(1, mean = log_prop[index], sd = sqrt(tune_var))
+    log_prop[index] <- log_proposal
+    proposal <- exp(log_prop)
     proposal / sum(proposal)
 }
 
@@ -20,20 +29,21 @@ draw_NIW2 <- function(x, hyp, z) {
     nz <- get_kappa(z, nclass)
     xbar <- sapply(seq(ncol(x)), function(X)
         tapply(x[, X], z, mean))
-    
+
     # If there are enough (D) observations in the class, sample from the posterior
     # Otherwise, just draw from the prior
     lapply(seq(nrow(hyp$hyp$mu0)), function(X)
         # If cluster X has enough members to evaluate
         if (nz[X] >= ncol(x)) {
             # If cluster X doesn't hold all the observations
-            if(!is.null(dim(xbar))) {
+            if (!is.null(dim(xbar))) {
                 LaplacesDemon::rnorminvwishart(
                     mu0 = (kappa[X] * hyp$hyp$mu0[X, ] + nz[X] * xbar[as.character(X), ]) / (kappa[X] + nz[X]),
                     lambda = hyp$kappa[X] + nz[X],
                     nu = hyp$kappa[X] + nz[X],
                     S = hyp$hyp$Psi0[, , X] * kappa[X] +
-                        t(as.matrix(x)[z==X,] - xbar[as.character(X),]) %*% (as.matrix(x)[z==X,] - xbar[as.character(X),]) +
+                        t(as.matrix(x)[z == X,] -
+                              xbar[as.character(X),]) %*% (as.matrix(x)[z == X,] - xbar[as.character(X),]) +
                         (kappa[X] * nz[X]) / (kappa[X] + nz[X]) *
                         outer(xbar[as.character(X),] - hyp$hyp$mu0[X,],
                               xbar[as.character(X),] - hyp$hyp$mu0[X,])
@@ -44,7 +54,8 @@ draw_NIW2 <- function(x, hyp, z) {
                     lambda = hyp$kappa[X] + nz[X],
                     nu = hyp$kappa[X] + nz[X],
                     S = hyp$hyp$Psi0[, , X] * kappa[X] +
-                        t(as.matrix(x)[z==X,] - xbar) %*% (as.matrix(x)[z==X,] - xbar) +
+                        t(as.matrix(x)[z == X,] - xbar) %*% (as.matrix(x)[z ==
+                                                                              X,] - xbar) +
                         (kappa[X] * nz[X]) / (kappa[X] + nz[X]) *
                         outer(xbar - hyp$hyp$mu0[X,], xbar - hyp$hyp$mu0[X,])
                 )
@@ -55,7 +66,7 @@ draw_NIW2 <- function(x, hyp, z) {
                 mu0 = hyp$hyp$mu0[X, ],
                 lambda = hyp$kappa[X],
                 nu = hyp$kappa[X],
-                S = hyp$hyp$Psi0[, , X] * kappa[X]
+                S = hyp$hyp$Psi0[, , X] * hyp$kappa[X]
             )
         })
 }
@@ -67,7 +78,7 @@ ll_normal <- function(dat, mu, sigma, prop) {
         mean = mu,
         sigma = sigma,
         log = TRUE
-        ))
+    ))
 }
 
 # Returns the log likelihood of the class indicators given the parameters
@@ -86,7 +97,7 @@ ll_mult <- function(dat, NIW, z, prop) {
     })
     zeros <- rep(0, ncol(d))
     sapply(seq_along(z), function(X)
-        dmultinom(replace(zeros, z[X], 1), prob = probs[,X], log = TRUE))
+        dmultinom(replace(zeros, z[X], 1), prob = probs[, X], log = TRUE))
 }
 
 # Evaluates the density of current prop estimate at the prior
@@ -100,21 +111,17 @@ log_posterior <-
              z,
              prop,
              NIW,
-             alpha,
-             mu0,
-             kappa0,
-             nu0,
-             Psi0) {
+             alpha) {
         lprop <- log_prop_prior(prop, alpha)
         ll_normal <-
             sapply(seq_along(NIW), function(X)
-                if(sum(z == X) >= ncol(dat)) {
-                    ll_normal(dat[z == X,], NIW[[X]]$mu, NIW[[X]]$Sigma)    
+                if (sum(z == X) >= ncol(dat)) {
+                    ll_normal(dat[z == X,], NIW[[X]]$mu, NIW[[X]]$Sigma)
                 } else {
                     0
                 })
         ll_mult <- ll_mult(dat, NIW, z, prop)
-        
+
         lprop + sum(ll_normal) + sum(ll_mult)
     }
 
@@ -126,7 +133,7 @@ get_lhastings <-
             nimble::ddirch(alpha_old, alpha_new, log = TRUE)
         alpha_new_given_old <-
             nimble::ddirch(alpha_new, alpha_old, log = TRUE)
-        
+
         alpha_old_given_new - alpha_new_given_old
     }
 
@@ -140,11 +147,11 @@ run_MCMC <-
              kappa0,
              Psi0,
              opt_rt = 0.3,
-             iterations = 1000,
-             stabilizer = 50) {
-        
+             iterations = 1000) {
         # Put hyperparameters in form to match old gibbs sampler
-        hyp <- list("kappa" = kappa0, "hyp" = list("mu0" = mu0, "Psi0" = Psi0))
+        hyp <-
+            list("kappa" = kappa0,
+                 "hyp" = list("mu0" = mu0, "Psi0" = Psi0))
         chain <- list()
         chain[[1]] <- list(
             "prop" = init_prop,
@@ -153,64 +160,55 @@ run_MCMC <-
             "tune_var" = 2,
             "acpt" = 1
         )
-        
+
         c0 <- 10
         c1 <- 0.8
         tune_k <- 2
         win_len <- min(iterations, 50)
         acpt <- c(1, rep(NA, win_len - 1))
-        
+
         pb <- txtProgressBar(min = 2,
                              max = iterations,
                              style = 3)
         for (i in 2:iterations) {
             gamma1 <- c0 / (i + tune_k) ^ (c1)
             tune_var <- update_var(
-                chain[[i-1]]$tune_var,
+                chain[[i - 1]]$tune_var,
                 acpt_rt = mean(acpt, na.rm = TRUE),
                 opt_rt = opt_rt,
                 gamma1 = gamma1
             )
-            
+
             NIW <- draw_NIW2(dat, hyp, chain[[i - 1]]$z)
             z <- updatez(dat, NIW, chain[[i - 1]]$prop)
-            prop <- propose_prop(chain[[i - 1]]$prop, tune_var = tune_var)
-            
+            prop <-
+                propose_prop(chain[[i - 1]]$prop, tune_var = tune_var)
+
             lpost_oldprop <-
                 log_posterior(
                     dat = dat,
                     z = z,
                     prop = chain[[i - 1]]$prop,
                     NIW = NIW,
-                    alpha = alpha,
-                    mu0 = mu0,
-                    kappa0 = kappa0,
-                    nu0 = nu0,
-                    Psi0 = Psi0
+                    alpha = alpha
                 )
-            
+
             lpost_newprop <-
                 log_posterior(
                     dat = dat,
                     z = z,
                     prop = prop,
                     NIW = NIW,
-                    alpha = alpha,
-                    mu0 = mu0,
-                    kappa0 = kappa0,
-                    nu0 = nu0,
-                    Psi0 = Psi0
+                    alpha = alpha
                 )
-            
+
             hastings <-
-                get_lhastings(
-                    alpha_old = chain[[i - 1]]$prop,
-                    alpha_new = prop
-                )
-            
+                get_lhastings(alpha_old = chain[[i - 1]]$prop,
+                              alpha_new = prop)
+
             accept_ratio <-
                 exp(lpost_newprop - lpost_oldprop + hastings)
-            
+
             if (runif(1) < accept_ratio) {
                 acpt[i %% win_len + 1] <- 1
                 chain[[i]] <- list(
@@ -230,6 +228,114 @@ run_MCMC <-
                     "acpt" = mean(acpt, na.rm = TRUE)
                 )
             }
+            setTxtProgressBar(pb, i)
+        }
+        close(pb)
+        chain
+    }
+
+
+# run weight-at-a-time MCMC (only one mixing weight proposed at once)
+# The differences here are
+# 1. how the adaptive tuning variances are tracked
+# 2. the proposal for the mixing weights
+# Consider changing this to not adapt until win_len iterations in
+run_wat_MCMC <-
+    function(dat,
+             init_prop,
+             init_NIW,
+             init_z,
+             alpha,
+             mu0,
+             kappa0,
+             Psi0,
+             opt_rt = 0.3,
+             iterations = 1000,
+             tune_var = .1) {
+        # Put hyperparameters in form to match old gibbs sampler
+        hyp <-
+            list("kappa" = kappa0,
+                 "hyp" = list("mu0" = mu0, "Psi0" = Psi0))
+        prop_curr <- init_prop
+        tune_var <- rep(tune_var, length(init_prop))
+        chain <- list()
+        chain[[1]] <- list(
+            "prop" = init_prop,
+            "NIW" = init_NIW,
+            "z" = init_z,
+            "tune_var" = tune_var,
+            "acpt" = rep(1, length(init_prop))
+        )
+
+        c0 <- 10
+        c1 <- 0.8
+        tune_k <- 2
+        win_len <- min(iterations, 50)
+        acpt <-
+            matrix(rep(c(1, rep(NA, win_len - 1)), times = length(init_prop)),
+                   ncol = length(init_prop),
+                   byrow = FALSE)
+
+        pb <- txtProgressBar(min = 2,
+                             max = iterations,
+                             style = 3)
+        for (i in 2:iterations) {
+            gamma1 <- c0 / (i + tune_k) ^ (c1)
+
+            for(j in seq_along(init_prop)) {
+                tune_var[j] <- update_var(
+                    chain[[i - 1]]$tune_var[j],
+                    acpt_rt = mean(acpt[,j], na.rm = TRUE),
+                    opt_rt = opt_rt,
+                    gamma1 = gamma1
+                )
+            }
+
+            NIW <- draw_NIW2(dat, hyp, chain[[i - 1]]$z)
+            z <- updatez(dat, NIW, chain[[i - 1]]$prop)
+
+            for (j in seq_along(init_prop)) {
+                prop_star <-
+                    propose_single_prop(prop_curr, j, tune_var = tune_var[j])
+                lpost_oldprop <-
+                    log_posterior(
+                        dat = dat,
+                        z = z,
+                        prop = prop_curr,
+                        NIW = NIW,
+                        alpha = alpha
+                    )
+
+                lpost_newprop <-
+                    log_posterior(
+                        dat = dat,
+                        z = z,
+                        prop = prop_star,
+                        NIW = NIW,
+                        alpha = alpha
+                    )
+
+                hastings <-
+                    get_lhastings(alpha_old = prop_curr,
+                                  alpha_new = prop_star)
+                accept_ratio <-
+                    exp(lpost_newprop - lpost_oldprop + hastings)
+
+                if (runif(1) < accept_ratio) {
+                    acpt[i %% win_len + 1, j] <- 1
+                    prop_curr <- prop_star
+                } else {
+                    acpt[i %% win_len + 1, j] <- 0
+                }
+            }
+
+            chain[[i]] <- list(
+                "prop" = prop_curr,
+                "NIW" = NIW,
+                "z" = z,
+                "tune_var" = tune_var,
+                "acpt" = apply(acpt, 2, function(X) mean(X, na.rm = TRUE))
+            )
             setTxtProgressBar(pb, i)
         }
         close(pb)

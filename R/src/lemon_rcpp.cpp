@@ -203,7 +203,7 @@ std::string cpaste0(std::vector<std::string> str1) {
     for(std::vector<std::string>::iterator it = str1.begin(); it != str1.end(); ++it) {
         pasted += *it;
     }
-    
+
     return pasted;
 }
 
@@ -212,13 +212,13 @@ std::string cpaste0(std::vector<std::string> str1) {
 arma::mat cstr_split(std::vector<std::string> strings, std::string split) {
     int num_strings = strings.size();
     arma::mat dims(num_strings, 2, arma::fill::none);
-    
+
     for(auto i = 0; i < num_strings; i++) {
         int num_substr = strings[i].length();
         std::vector<std::string> tmp1;
         std::vector<std::string> tmp2;
         bool found_split = FALSE;
-        
+
         for(auto j=0; j < num_substr; j++) {
             if(found_split == FALSE) {
                 if(strings[i].substr(j,1) != split) {
@@ -230,12 +230,12 @@ arma::mat cstr_split(std::vector<std::string> strings, std::string split) {
                 tmp2.push_back(strings[i].substr(j,1));
             }
         }
-        
+
         // Still need to paste tmp1, tmp2 each into one individual int
         dims(i,0) = std::stoi(cpaste0(tmp1));
         dims(i,1) = std::stoi(cpaste0(tmp2));
     }
-    
+
     return dims;
 }
 
@@ -268,27 +268,27 @@ int trans_func(double& x) {
 //    arma::uvec zeroidx;
 //    arma::cube propQ (3, 1, d);
 //    arma::colvec means;
-//    
+//
 //    // Get Combos
 //    arma::field<arma::mat> comb(n_pairs);
 //    for(int i = 0; i < n_pairs; i++) {
 //        comb(i) = Rcpp::as<arma::mat>(mus[i]);
 //        comb(i).transform([](double val) { return(trans_func(val)); } );
 //    }
-//    
+//
 //    // Which fits model which pairs of dims
 //    arma::mat dims = cstr_split(get_list_names(mus), "_");
-//    
+//
 //    // for each dim
 //    for(int i = 1; i <= d; i++) {
 //        //
 //        // Get marginal proportions
 //        //
-//        
+//
 //        assoc.set_size(d-1);
 //        marg_prop.set_size(d-1);
 //        int count = 0;
-//        
+//
 //        // Across all analyses where we consider the given dim
 //        for(int j = 0; j < dims.n_rows; j++) {
 //            bools = find(dims.row(j) == i);
@@ -317,7 +317,7 @@ int trans_func(double& x) {
 //            if(j == 0) {
 //                unl_assoc.subvec(0, size(assoc(0))) =  assoc(0);
 //                unl_marg_prop.subvec(0, size(assoc(0))) =  marg_prop(0);
-//            } else { 
+//            } else {
 //                unl_assoc.subvec(accu(sublens.subvec(0,j-1)), size(assoc(j))) =  assoc(j);
 //                unl_marg_prop.subvec(accu(sublens.subvec(0,j-1)), size(marg_prop(j))) =  marg_prop(j);
 //            }
@@ -325,7 +325,7 @@ int trans_func(double& x) {
 //        negidx = find(unl_assoc == -1);
 //        zeroidx = find(unl_assoc == 0);
 //        posidx = find(unl_assoc == 1);
-//        
+//
 //        means = { mean(unl_marg_prop.elem(negidx)),
 //                    mean(unl_marg_prop.elem(zeroidx)),
 //                    mean(unl_marg_prop.elem(posidx)) };
@@ -339,10 +339,10 @@ int trans_func(double& x) {
 //        red_class.col(i-1).replace(0, propQ(1,0,i-1));
 //        red_class.col(i-1).replace(1, propQ(2,0,i-1));
 //    }
-//    
+//
 //    arma::colvec prob = prod(red_class, 1);
 //    prob = prob/(accu(prob));
-//    
+//
 //    return prob;
 //}
 
@@ -351,7 +351,7 @@ int trans_func(double& x) {
 arma::vec caccept(arma::mat x, arma::colvec y){
     int b = x.n_rows;
     arma::vec out(b, arma::fill::none);
-    
+
     for(int i = 0; i < b; i++){
         bool vecmatch = arma::approx_equal(x.row(i), y.t(), "absdiff", 0.001);
         if(vecmatch) {
@@ -427,6 +427,8 @@ arma::colvec cget_true_assoc_idx(arma::mat red_class, arma::mat true_assoc) {
     arma::uvec trueidx;
     arma::colvec m;
     arma::colvec out(nassoc);
+    out.ones();
+    out = out*(-1);
 
     int count = 0;
     for(int i = 0; i < nassoc; i++) {

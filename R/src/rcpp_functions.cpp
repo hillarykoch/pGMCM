@@ -415,9 +415,8 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
             return Rcpp::List::create(Rcpp::Named("optim_err") = NA_REAL);
         }
 
-        // transform sigma, rho back
+        // transform sigma back
         param_new(1) = exp(param_new(1));
-        std::cout << param_new.t();
 
         prop_new.set_size(k);
         if(LASSO == 1) {

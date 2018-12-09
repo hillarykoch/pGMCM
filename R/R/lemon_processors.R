@@ -188,5 +188,6 @@ get_reduced_classes <- function(fits, d, filepath = "lgf.txt") {
 get_true_assoc_idx <- function(red_class, true_assoc) {
   true_assoc <- as.matrix(true_assoc)
   trueidx <- cget_true_assoc_idx(red_class, true_assoc)
-  sort(trueidx)
+  keepidx <- trueidx != 0
+  sort(trueidx[keepidx])
 }
