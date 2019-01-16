@@ -131,7 +131,8 @@ draw_NIW <- function(x, hyp, z, nclass) {
                     lambda = hyp$kappa[X] + nz[X],
                     nu = hyp$kappa[X] + nz[X],
                     S = hyp$hyp$Psi0[, , X] * kappa[X] +
-                        t(as.matrix(x)[z==X,] - xbar[as.character(X),]) %*% (as.matrix(x)[z==X,] - xbar[as.character(X),]) +
+                        t(sweep(as.matrix(dat)[z == X,], 2, xbar[as.character(X),])) %*%
+                        sweep(as.matrix(dat)[z ==X,], 2, xbar[as.character(X),]) +
                         (kappa[X] * nz[X]) / (kappa[X] + nz[X]) *
                         outer(xbar[as.character(X),] - hyp$hyp$mu0[X,],
                               xbar[as.character(X),] - hyp$hyp$mu0[X,])
@@ -142,7 +143,8 @@ draw_NIW <- function(x, hyp, z, nclass) {
                     lambda = hyp$kappa[X] + nz[X],
                     nu = hyp$kappa[X] + nz[X],
                     S = hyp$hyp$Psi0[, , X] * kappa[X] +
-                        t(as.matrix(x)[z==X,] - xbar) %*% (as.matrix(x)[z==X,] - xbar) +
+                        t(sweep(as.matrix(dat)[z == X,], 2, xbar)) %*%
+                        sweep(as.matrix(dat)[z ==X,], 2, xbar) +
                         (kappa[X] * nz[X]) / (kappa[X] + nz[X]) *
                         outer(xbar - hyp$hyp$mu0[X,], xbar - hyp$hyp$mu0[X,])
                 )
@@ -158,103 +160,103 @@ draw_NIW <- function(x, hyp, z, nclass) {
         })
 }
 
-updatez <- function(data, NIW, mix_prop) {
+updatez <- function(dat, NIW, mix_prop) {
     d <- sapply(seq_along(NIW),
                 function(X)
-                    mvtnorm::dmvnorm(data,
+                    mvtnorm::dmvnorm(dat,
                                      mean = NIW[[X]]$mu,
                                      sigma = NIW[[X]]$Sigma) * mix_prop[X])
-
     apply(d, 1, function(X)
         if(all(X == 0)) {
             base::sample(seq_along(NIW), 1)
         } else {
-            base::sample(seq_along(NIW), 1, prob = X) 
+            base::sample(seq_along(NIW), 1, prob = X)
         })
 }
 
-# run the gibbs sampler
-run_gibbs <- function(x, prior_prop, fits, d, red_class, nsamp) {
-    n <- nrow(x)
-    nclass <- nrow(red_class)
-    z_init <-
-        sample(seq(nclass),
-               replace = TRUE,
-               size = n,
-               prob = prior_prop) # possibly I should be initializing z in a smarter manner
-    kappa <- round(prior_prop * n, nclass)
-
-    hyp <-
-        list("kappa" = kappa, "hyp" = get_hyperparams(fits, d, red_class))
-    prop0 <-
-        draw_mix_prop(alpha = prior_prop, z = z_init)
-    NIW <- draw_NIW(x, hyp, z_init, nclass)
-
-    z <- updatez(x, NIW, prop0)
-
-    # Run the gibbs sampler (with a progress bar!)
-    param.tr <- list()
-    param.tr[[1]] <- list("z" = z,
-                          "mix_prop" = prop0,
-                          "NIW" = NIW)
-
-    pb <- txtProgressBar(min = 2,
-                         max = nsamp,
-                         style = 3)
-    for (i in 2:nsamp) {
-        mix_prop <- draw_mix_prop(prior_prop, param.tr[[i - 1]]$z)
-        NIW <- draw_NIW(x, hyp, param.tr[[i - 1]]$z, nclass)
-        zstar <- updatez(x, NIW, param.tr[[i - 1]]$mix_prop)
-        param.tr[[i]] <-
-            list("z" = zstar,
-                 "mix_prop" = mix_prop,
-                 "NIW" = NIW)
-        setTxtProgressBar(pb, i)
-    }
-    close(pb)
-
-    param.tr
-}
-
-# extend a gibbs sampler that has already been run for some number of iterations
-# This is out of date
-extend_gibbs <-
-    function(param.tr,
-             x,
-             prior_prop,
-             fits,
-             d,
-             red_class,
-             nsamp) {
-        n <- nrow(x)
-        nclass <- nrow(red_class)
-        nsamp_prev <- length(param.tr)
-
-        kappa <- get_kappa(param.tr[[nsamp_prev]]$z, nclass)
+run_gibbs <-
+    function(dat,
+             init_prop,
+             init_NIW,
+             init_z,
+             alpha,
+             mu0,
+             kappa0,
+             Psi0,
+             iterations = 1000) {
+        # put hyp in wanted form (may replace with a "get_hyperparams()" call in the future)
         hyp <-
-            list("kappa" = kappa, "hyp" = get_hyperparams(fits, d, red_class))
-
-        mix_prop_star <-
-            draw_mix_prop(alpha = prior_prop, z = param.tr[[nsamp_prev]]$z)
-        NIW_star <- draw_NIW(x, hyp, param.tr[[nsamp_prev]]$z, nclass)
-        zstar <- updatez(x, param.tr[[nsamp_prev]]$NIW)
-        param.tr2 <- list()
-        param.tr2[[1]] <- list("z" = zstar,
-                               "mix_prop" = mix_prop_star,
-                               "NIW" = NIW_star)
+            list("kappa" = kappa0,
+                 "hyp" = list("mu0" = mu0, "Psi0" = Psi0))
+        
+        # Prepare chain
+        chain <- list()
+        chain[[1]] <- list(
+            "prop" = init_prop,
+            "NIW" = init_NIW,
+            "z" = init_z
+        )
+        
+        # Run Gibbs sampler
         pb <- txtProgressBar(min = 2,
-                             max = nsamp,
+                             max = iterations,
                              style = 3)
-        for (i in 2:nsamp) {
-            mix_prop <- draw_mix_prop(prior_prop, param.tr2[[i - 1]]$z)
-            NIW <- draw_NIW(x, hyp, param.tr2[[i - 1]]$z, nclass)
-            zstar <- updatez(x, NIW)
-            param.tr2[[i]] <-
-                list("z" = zstar,
-                     "mix_prop" = mix_prop,
-                     "NIW" = NIW)
+        for (i in 2:iterations) {
+            # Make Gibbs updates for means, covariances, cluster labels, and mixing weights
+            NIW <- draw_NIW2(dat, hyp, chain[[i - 1]]$z)
+            z <- updatez(dat, NIW, chain[[i - 1]]$prop)
+            prop <- nimble::rdirch(n = 1, alpha = alpha + get_kappa(z, length(init_prop)))
+            
+            chain[[i]] <- list(
+                "prop" = prop,
+                "NIW" = NIW,
+                "z" = z
+            )
             setTxtProgressBar(pb, i)
         }
         close(pb)
-        c(param.tr, param.tr2)
+        chain
     }
+
+# extend a gibbs sampler that has already been run for some number of iterations
+# This is out of date
+# extend_gibbs <-
+#     function(chain,
+#              x,
+#              prior_prop,
+#              fits,
+#              d,
+#              red_class,
+#              nsamp) {
+#         n <- nrow(x)
+#         nclass <- nrow(red_class)
+#         nsamp_prev <- length(chain)
+# 
+#         kappa <- get_kappa(chain[[nsamp_prev]]$z, nclass)
+#         hyp <-
+#             list("kappa" = kappa, "hyp" = get_hyperparams(fits, d, red_class))
+# 
+#         mix_prop_star <-
+#             draw_mix_prop(alpha = prior_prop, z = chain[[nsamp_prev]]$z)
+#         NIW_star <- draw_NIW(x, hyp, param.tr[[nsamp_prev]]$z, nclass)
+#         zstar <- updatez(x, param.tr[[nsamp_prev]]$NIW)
+#         chain2 <- list()
+#         chain2[[1]] <- list("z" = zstar,
+#                                "mix_prop" = mix_prop_star,
+#                                "NIW" = NIW_star)
+#         pb <- txtProgressBar(min = 2,
+#                              max = nsamp,
+#                              style = 3)
+#         for (i in 2:nsamp) {
+#             mix_prop <- draw_mix_prop(prior_prop, chain2[[i - 1]]$z)
+#             NIW <- draw_NIW(x, hyp, chain2[[i - 1]]$z, nclass)
+#             zstar <- updatez(x, NIW)
+#             chain2[[i]] <-
+#                 list("z" = zstar,
+#                      "mix_prop" = mix_prop,
+#                      "NIW" = NIW)
+#             setTxtProgressBar(pb, i)
+#         }
+#         close(pb)
+#         c(chain, chain2)
+#     }
