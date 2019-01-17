@@ -1,4 +1,4 @@
-module mcmc_functions
+module singlegibbs
 
 using Distributed
 using Statistics
@@ -62,77 +62,71 @@ function make_gibbs_update(dat, hyp, z, prop, alpha)
     * prop is an nw x nt array, where each entry is of length nm
     * alpha is an nm array of prior weights
     """
-    nw, nt = size(prop)
-    nm = size(prop[1])[1]
+    nm = size(prop, 1)
     kappa0, mu0, Psi0 = hyp
     n, dm = size(dat)
 
-    NIW = Array{Dict{String,Array{Float64,N} where N}}(undef,nw,nt,nm)
-    for i in 1:nw
-        for j in 1:nt
-            """
-            Count the number of observations in each class
-                for the current walker, current temperature
-            """
-            rles = @> begin
-                    z[i,j]
-                    @>sort()
-                    @>StatsBase.rle()
-                end
-            nz = zeros(nm)
-            @inbounds nz[rles[1]] = rles[2]
+    NIW = Array{Dict{String,Array{Float64,N} where N}}(undef,nm)
+    """
+    Count the number of observations in each class
+        for the current walker, current temperature
+    """
+    rles = @> begin
+            z
+            @>sort()
+            @>StatsBase.rle()
+        end
+    nz = zeros(nm)
+    @inbounds nz[rles[1]] = rles[2]
 
-            """
-            Compute the d-dimensional sample mean for each class
-                for the current walker, current temperature
-            """
-            # xbar is an array of d dictionaries
-            xbar = DataFrames.colwise(x -> tapply_mean(z[i,j], x), dat)
+    """
+    Compute the d-dimensional sample mean for each class
+        for the current walker, current temperature
+    """
+    # xbar is an array of d dictionaries
+    xbar = DataFrames.colwise(x -> tapply_mean(z, x), dat)
+    """
+    Draw NIW random variables
+    If there are enough (dm) observations in the class, sample from the posterior
+        Otherwise, just draw from the prior
+    Store the NIW in an array of dictionaries
+    """
+    for m in 1:nm
+        if nz[m] >= dm
+            # Compute this only once because it gets reused a lot here
+            xbarmap = map(x -> x[m], xbar)
 
-            """
-            Draw NIW random variables
-            If there are enough (dm) observations in the class, sample from the posterior
-                Otherwise, just draw from the prior
-            Store the NIW in an array of dictionaries
-            """
-            for m in 1:nm
-                if nz[m] >= dm
-                    # Compute this only once because it gets reused a lot here
-                    xbarmap = map(x -> x[m], xbar)
-
-                    # Draw from the posterior (I don't have the additional ifelse that is in my R code here)
-                    Sigma = rand(
-                                InverseWishart(kappa0[m] + nz[m],
-                                               round.(Psi0[:,:,m] * kappa0[m] +
-                                                  (Matrix(dat[z[i,j] .== m,:]) .- xbarmap')' *
-                                                       (Matrix(dat[z[i,j] .== m,:]) .- xbarmap') +
-                                                       (kappa0[m] * nz[m]) / (kappa0[m] + nz[m]) *
-                                                       (xbarmap - mu0[m,:]) *  (xbarmap - mu0[m,:])'; digits=6)
-                            )
+            # Draw from the posterior (I don't have the additional ifelse that is in my R code here)
+            Sigma = rand(
+                        InverseWishart(kappa0[m] + nz[m],
+                                             round.(Psi0[:,:,m] * kappa0[m] +
+                                                (Matrix(dat[z .== m,:]) .- xbarmap')' *
+                                                     (Matrix(dat[z .== m,:]) .- xbarmap') +
+                                                (kappa0[m] * nz[m]) / (kappa0[m] + nz[m]) *
+                                                    (xbarmap - mu0[m,:]) *  (xbarmap - mu0[m,:])'; digits=6)
                     )
-                    mu = rand(
-                            MvNormal(
-                                (kappa0[m] * mu0[m,:] + nz[m] * xbarmap) / (kappa0[m] + nz[m]),
-                                Sigma / (kappa0[m] + nz[m])
-                            )
+            )
+            mu = rand(
+                    MvNormal(
+                        (kappa0[m] * mu0[m,:] + nz[m] * xbarmap) / (kappa0[m] + nz[m]),
+                        Sigma / (kappa0[m] + nz[m])
                     )
-                    @inbounds NIW[i,j,m] = Dict("mu" => mu, "Sigma" => Sigma)
-                else
-                    # Draw from the prior
-                    Sigma = rand(
-                                InverseWishart(kappa0[m],
-                                               Psi0[:,:,m] * kappa0[m]
-                            )
+            )
+            @inbounds NIW[m] = Dict("mu" => mu, "Sigma" => Sigma)
+        else
+            # Draw from the prior
+            Sigma = rand(
+                        InverseWishart(kappa0[m],
+                                             Psi0[:,:,m] * kappa0[m]
                     )
-                    mu = rand(
-                            MvNormal(
-                                mu0[m,:],
-                                Sigma / kappa0[m]
-                            )
+            )
+            mu = rand(
+                    MvNormal(
+                        mu0[m,:],
+                        Sigma / kappa0[m]
                     )
-                    @inbounds NIW[i,j,m] = Dict("mu" => mu, "Sigma" => Sigma)
-                end
-            end
+            )
+            @inbounds NIW[m] = Dict("mu" => mu, "Sigma" => Sigma)
         end
     end
 
@@ -217,12 +211,13 @@ function loglike(param::Tuple{Array{Dict{String,Array{Float64,N} where N},1},Arr
     # Convert density to probabilities
     prob = @> begin
             p'
-            @>exp.()
+            @>exp.() # consider rounding "x" to avoid inexact error?
+            #@>round.(digits=25)
             @>>mapslices(x -> all(x .== 0.0) ? rep(1, times = nm) : x, dims = 1)
             @>>mapslices(x -> x/sum(x), dims = 1)
     end
 
-    #z = Int64.(z)
+    z = Int64.(z) # is this my problem????
     mult_distns = mapslices(x -> Multinomial(1,x), prob, dims = 1)
     ll_mult = zeros(n)
     for i in 1:n
@@ -297,10 +292,7 @@ end
 
 export make_mcmc_move
 function make_mcmc_move(dat, param, hyp, alpha, ll, lp, betas)
-    nw, nt = size(param)
-    NIW = map(x -> x[1], param)
-    prop = map(x -> x[2], param)
-    z = map(x -> x[3], param)
+    NIW, prop, z = param
 
     """
     1. Make gibbs updates of mus, Sigmas, and cluster labels
@@ -469,24 +461,12 @@ function run_mcmc(dat, param, hyp, alpha, loglike, logprior, betas, nstep, burni
     """
 
     # Instantiate each object to the correct size
-    nw, nt = size(param)
     n, nd = size(dat)
-
-    @assert size(betas,1)==nt "size(betas,1) must be equal to the number of temperatures"
 
     # The burn-in period
     @showprogress 1 "Computing for burn-in..." for i in 1:burnin
-        # Update NIW, z, and mixing weights with Gibbs, store results
+        # Propose new everything, accept or reject, store results
         param, lnlikes, lnpriors = make_mcmc_move(dat, param, hyp, alpha, loglike, logprior, betas)
-
-        # Propose swaps between various chains at various temperatures
-        # Also track (during this burnin period) how often and which walkers swap
-        param, lnlikes, lnpriors, tswaps = make_tswap(param, lnlikes, lnpriors, betas)
-        swapfraction = tswaps / nw
-        tc = 10.0 + i/10.0 # tc > 10 always, but asymptotes to "current length / 10"
-
-        # Adaptively tune the temperatures (looks a lot like formula for a spring)
-        betas = tevolve(swapfraction, betas, tc)
     end
 
     """
@@ -509,9 +489,9 @@ function run_mcmc(dat, param, hyp, alpha, loglike, logprior, betas, nstep, burni
       May also want to adjust -- multiple MCMC updates in between each swap step
       """
         param, lnlikes, lnpriors = make_mcmc_move(dat, param, hyp, alpha, loglike, logprior, betas)
-        param, lnlikes, lnpriors, _ = make_tswap(param, lnlikes, lnpriors, betas)
+        #param, lnlikes, lnpriors, _ = make_tswap(param, lnlikes, lnpriors, betas)
 
-        @inbounds chain[:,:,i] = deepcopy(param)
+        @inbounds chain[:,:,i] = param
         @inbounds chainlnlike[:,:,i] = lnlikes
         @inbounds chainlnprior[:,:,i] = lnpriors
     end
