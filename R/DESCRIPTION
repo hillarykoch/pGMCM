@@ -11,6 +11,7 @@ LazyData: true
 Imports:
     abind,
     dplyr,
+    JuliaCall,
     LaplacesDemon,
     magrittr,
     MCMCpack,

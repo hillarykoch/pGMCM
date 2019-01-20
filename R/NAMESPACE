@@ -1,6 +1,7 @@
 useDynLib(pGMCM, .registration=TRUE)
 importFrom(abind, abind)
 importFrom(dplyr, mutate)
+import(JuliaCall)
 import(magrittr)
 import(methods)
 importFrom(plyr, alply)
