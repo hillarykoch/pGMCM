@@ -19,6 +19,14 @@ Balázs Dezső, Alpár Jüttner, Péter Kovács. LEMON – an Open Source C++ Gr
 2.  You need a compiler that has support for C++11, such as
     *   GCC: [see here, for example](https://www.gnu.org/software/gcc/projects/cxx-status.html#cxx11)
     *   clang: [see here](http://clang.llvm.org/cxx_status.html)
+    
+3. The Julia programming language, version >= 1.0:
+    *   Download Julia [here](https://julialang.org/downloads/)
+    *   Or, if you have Homebrew, from the terminal you can type
+    ```console
+    brew cask install julia
+    ```
+4. Julia is used to support a parallel-tempered Gibbs sampler. You will need to install the companion Julia module to this R package, called ptgibbs.jl, to implement this. Please see [my other git repo](https://github.com/hillarykoch/ptgibbs.jl) for the brief installation instructions.
 
 ## Getting the package
 This package is currently only maintained on GitHub. To download just the R package portion of the software, you can open R and do the following commands:
