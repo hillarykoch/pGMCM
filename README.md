@@ -20,7 +20,7 @@ Balázs Dezső, Alpár Jüttner, Péter Kovács. LEMON – an Open Source C++ Gr
     *   GCC: [see here, for example](https://www.gnu.org/software/gcc/projects/cxx-status.html#cxx11)
     *   clang: [see here](http://clang.llvm.org/cxx_status.html)
     
-3. The Julia programming language, version >= 1.0:
+3. You also need a more recent version of the Julia programming language, version >= 1.0:
     *   Download Julia [here](https://julialang.org/downloads/)
     *   Or, if you have Homebrew, from the terminal you can type
     ```console
@@ -36,7 +36,7 @@ library(devtools)
 install_github("hillarykoch/pGMCM/R")
 library(pGMCM)
 ```
-*note: the R version is fully functional but the Julia code is just a test that cannot practically be used.*
+*note: the R code here is fully functional but the Julia code found in **this repo** is just a test that cannot practically be used.*
 
 ## About the software
 <!---
