@@ -122,3 +122,4 @@ get_z_chain <- function(chain, walker_num) {
     JuliaCall::julia_assign("chain", chain[[1]])
     JuliaCall::julia_eval("ptgibbs.get_z_chain(chain, walker_num)")
 }
+
