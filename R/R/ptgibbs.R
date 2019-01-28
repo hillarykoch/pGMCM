@@ -16,7 +16,12 @@ prepare_julia <- function() {
     JuliaCall::julia_command("using Distributions")
 }
 
-run_ptgibbs <- function(dat, kappa0, mu0, Psi0, alpha, nw, nt, nstep, burnin) {
+run_ptgibbs <- function(dat,kappa0, mu0, Psi0, alpha, nw, nt=1, nstep,
+                        burnin, constrained = FALSE, reduced_classes = NULL) {
+    dat <- data.frame(dat)
+    
+    prepare_julia()
+    
     # Compute some values from the inputs
     dm <- ncol(dat)
     n <- nrow(dat)
@@ -59,9 +64,9 @@ run_ptgibbs <- function(dat, kappa0, mu0, Psi0, alpha, nw, nt, nstep, burnin) {
         for(j in 1:nt) {
             JuliaCall::julia_assign("dictionary", JuliaCall::julia_eval("Dict{String,Array{Float64,N} where N}[];"))
             for(m in 1:nm) {
-                JuliaCall::julia_assign("Sigma", JuliaCall::julia_eval("rand(InverseWishart(500, 500 * 2 * Matrix{Float64}(I,dm,dm)));")) # Fix this thing here
+                JuliaCall::julia_assign("Sigma", JuliaCall::julia_eval("rand(InverseWishart(max(kappa0[m], dm), max(kappa0[m], dm) * Matrix{Float64}(I,dm,dm)));"))
                 JuliaCall::julia_assign("m", m)
-                JuliaCall::julia_assign("mu", JuliaCall::julia_eval("rand(MvNormal(mu0[m,:], Sigma / 500));"))
+                JuliaCall::julia_assign("mu", JuliaCall::julia_eval("rand(MvNormal(mu0[m,:], Sigma / max(kappa0[m], dm)));"))
                 JuliaCall::julia_command("push!(dictionary, Dict(\"mu\" => mu, \"Sigma\" => Sigma));")
             }
             JuliaCall::julia_assign("initprop", JuliaCall::julia_eval("rand(Dirichlet(alpha));"))
@@ -77,15 +82,37 @@ run_ptgibbs <- function(dat, kappa0, mu0, Psi0, alpha, nw, nt, nstep, burnin) {
     ll <- JuliaCall::julia_assign("ll", JuliaCall::julia_eval("ptgibbs.loglike;"))
     lp <- JuliaCall::julia_assign("lp", JuliaCall::julia_eval("ptgibbs.logprior;"))
     
-    # Temperatures
-    betas <- seq(1,.001, length.out = nt)
-    JuliaCall::julia_assign("betas", betas)
-    
-    # Run the chain
-    JuliaCall::julia_eval("ptgibbs.run_mcmc(dat, param, hyp, alpha, ll, lp, betas, nstep, burnin);")
+    if(constrained){
+        # Run the constrained chain
+        if(is.null(reduced_classes)) {
+            stop("For the constrained model, a matrix of class labels must be specified.")
+        }
+        if(length(alpha) != nrow(reduced_classes)) {
+            stop("length(alpha) must be the same as nrow(reduced_classes). These both
+                    correspond to the cluster number.")
+        }
+        labels <- apply(reduced_classes+1, 1, function(X) paste0(X, collapse = ""))
+        JuliaCall::julia_assign("labels", labels)
+        
+        if(nt > 1) {
+            betas <- seq(1,.001, length.out = nt)
+            JuliaCall::julia_assign("betas", betas)
+            JuliaCall::julia_eval("ptgibbs.run_constr_mcmc(dat, param, hyp, alpha, ll, lp, betas, nstep, burnin, labels);")
+        } else {
+            JuliaCall::julia_eval("ptgibbs.run_constr_gibbs(dat, param, hyp, alpha, ll, lp, nstep, burnin, labels);")
+        }
+    } else {
+        if(nt > 1) {
+            betas <- seq(1,.001, length.out = nt)
+            JuliaCall::julia_assign("betas", betas)
+            JuliaCall::julia_eval("ptgibbs.run_mcmc(dat, param, hyp, alpha, ll, lp, betas, nstep, burnin);")
+        } else {
+            JuliaCall::julia_eval("ptgibbs.run_gibbs(dat, param, hyp, alpha, ll, lp, nstep, burnin);")
+        }
+    }
 }
 
-get_mu_chain <- function(chain, walker_num, cluster_num) {
+get_mu_chain <- function(chain, walker_num, cluster_num, tempered = FALSE) {
     JuliaCall::julia_assign("walker_num", walker_num)
     JuliaCall::julia_assign("walker_num", JuliaCall::julia_eval("Int64(walker_num)"))
     
@@ -93,10 +120,15 @@ get_mu_chain <- function(chain, walker_num, cluster_num) {
     JuliaCall::julia_assign("cluster_num", JuliaCall::julia_eval("Int64(cluster_num)"))
     
     JuliaCall::julia_assign("chain", chain[[1]])
-    JuliaCall::julia_eval("ptgibbs.get_mu_chain(chain, walker_num, cluster_num)")
+    
+    if(!tempered) {
+        JuliaCall::julia_eval("ptgibbs.get_gibbs_mu_chain(chain, walker_num, cluster_num)")
+    } else {
+        JuliaCall::julia_eval("ptgibbs.get_mu_chain(chain, walker_num, cluster_num)")   
+    }
 }
 
-get_Sigma_chain <- function(chain, walker_num, cluster_num) {
+get_Sigma_chain <- function(chain, walker_num, cluster_num, tempered = FALSE) {
     JuliaCall::julia_assign("walker_num", walker_num)
     JuliaCall::julia_assign("walker_num", JuliaCall::julia_eval("Int64(walker_num)"))
     
@@ -104,21 +136,36 @@ get_Sigma_chain <- function(chain, walker_num, cluster_num) {
     JuliaCall::julia_assign("cluster_num", JuliaCall::julia_eval("Int64(cluster_num)"))
     
     JuliaCall::julia_assign("chain", chain[[1]])
-    JuliaCall::julia_eval("ptgibbs.get_Sigma_chain(chain, walker_num, cluster_num)")
+    
+    if(!tempered) {
+        JuliaCall::julia_eval("ptgibbs.get_gibbs_Sigma_chain(chain, walker_num, cluster_num)")    
+    } else {
+        JuliaCall::julia_eval("ptgibbs.get_Sigma_chain(chain, walker_num, cluster_num)")    
+    }
 }
 
-get_prop_chain <- function(chain, walker_num) {
+get_prop_chain <- function(chain, walker_num, tempered = FALSE) {
     JuliaCall::julia_assign("walker_num", walker_num)
     JuliaCall::julia_assign("walker_num", JuliaCall::julia_eval("Int64(walker_num)"))
     
     JuliaCall::julia_assign("chain", chain[[1]])
-    JuliaCall::julia_eval("ptgibbs.get_prop_chain(chain, walker_num)")
+    
+    if(!tempered) {
+        JuliaCall::julia_eval("ptgibbs.get_gibbs_prop_chain(chain, walker_num)")
+    } else {
+        JuliaCall::julia_eval("ptgibbs.get_prop_chain(chain, walker_num)")    
+    }
 }
 
-get_z_chain <- function(chain, walker_num) {
+get_z_chain <- function(chain, walker_num, tempered = FALSE) {
     JuliaCall::julia_assign("walker_num", walker_num)
     JuliaCall::julia_assign("walker_num", JuliaCall::julia_eval("Int64(walker_num)"))
     
     JuliaCall::julia_assign("chain", chain[[1]])
-    JuliaCall::julia_eval("ptgibbs.get_z_chain(chain, walker_num)")
+    
+    if(!tempered) {
+        JuliaCall::julia_eval("ptgibbs.get_gibbs_z_chain(chain, walker_num)")
+    } else {
+        JuliaCall::julia_eval("ptgibbs.get_z_chain(chain, walker_num)")    
+    }
 }
