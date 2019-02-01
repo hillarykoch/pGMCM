@@ -67,8 +67,12 @@ run_ptgibbs <- function(dat,kappa0, mu0, Psi0, alpha, nw, nt=1, nstep,
                 JuliaCall::julia_assign("m", m)
                 JuliaCall::julia_assign("m", JuliaCall::julia_eval("Int64(m)"))
 
-                JuliaCall::julia_assign("Sigma", JuliaCall::julia_eval("rand(InverseWishart(max(kappa0[m], dm), max(kappa0[m], dm) * Matrix{Float64}(I,dm,dm)));"))
-                JuliaCall::julia_assign("mu", JuliaCall::julia_eval("rand(MvNormal(mu0[m,:], Sigma / max(kappa0[m], dm)));"))
+                # JuliaCall::julia_assign("Sigma", JuliaCall::julia_eval("rand(InverseWishart(max(kappa0[m], dm), max(kappa0[m], dm) * Matrix{Float64}(I,dm,dm)));"))
+                # JuliaCall::julia_assign("mu", JuliaCall::julia_eval("rand(MvNormal(mu0[m,:], Sigma / max(kappa0[m], dm)));"))
+
+                JuliaCall::julia_assign("Sigma", JuliaCall::julia_eval("rand_constrained_IW(Psi0[:,:,m], kappa0[m], reduced_classes[m,:]);"))
+                JuliaCall::julia_assign("mu", JuliaCall::julia_eval("rand_constrained_MVN(Sigma/kappa0[m], mu0[m,:], reduced_classes[m,:]);"))
+
                 JuliaCall::julia_command("push!(dictionary, Dict(\"mu\" => mu, \"Sigma\" => Sigma));")
             }
             JuliaCall::julia_assign("initprop", JuliaCall::julia_eval("rand(Dirichlet(alpha));"))
