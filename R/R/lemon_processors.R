@@ -52,6 +52,7 @@ write_LGF <- function(h, d, path) {
     
     # Make node section of LGF file (first pass)
     filt_h <- filter_h(h, d)
+    l <- length(unlist(filt_h))
     dims <- purrr::map(filt_h, length)
     node <-
         data.frame(
@@ -82,9 +83,7 @@ write_LGF <- function(h, d, path) {
                      targets),
         "target" = c(sources,
                      abind::abind(trg),
-                     rep(length(unlist(
-                         filt_h
-                     )) + 1, length(targets)))
+                     rep(l + 1, length(targets)))
     )
     
     # Recursively eliminate nodes that don't have sources however many arcs back
@@ -132,6 +131,7 @@ write_LGF <- function(h, d, path) {
                      path = path,
                      col_names = TRUE,
                      append = TRUE)
+    cat("\n", file = path, append = TRUE)
     
     readr::write_tsv(
         data.frame("@arcs"),
