@@ -49,7 +49,7 @@ get_consecutive <- function(h, non_consec = FALSE) {
 # Make LGF file to be read by LEMON DigraphReader
 write_LGF <- function(h, d, path) {
     cat("Writing LGF file...")
-
+    
     # Make node section of LGF file (first pass)
     filt_h <- filter_h(h, d)
     dims <- purrr::map(filt_h, length)
@@ -60,87 +60,93 @@ write_LGF <- function(h, d, path) {
                 rep(X, times = dims[[X]])) %>% unlist, d + 1),
             "assoc" = c(0, unlist(filt_h), 0)
         )
-
-  # Make arc section of LGF file (first pass)
-  consec <- get_consecutive(h)
-
-  src <- trg <- list()
-  for (i in seq_along(consec)) {
-    src[[i]] <-
-      sapply(consec[[i]][, 1], function(X)
-        node$label[node$assoc == X & node$dim == i])
-    trg[[i]] <-
-      sapply(consec[[i]][, 2], function(X)
-        node$label[node$assoc == X & node$dim == i + 1])
-  }
-
-  sources <- dplyr::filter(node, dim == 1)$label
-  targets <- dplyr::filter(node, dim == d)$label
-  arcs <- data.frame(
-    "source" = c(
-      rep(0, length(sources)),
-      abind::abind(src),
-      targets
-    ),
-    "target" = c(
-      sources,
-      abind::abind(trg),
-      rep(length(unlist(filt_h)) + 1, length(targets))
+    
+    # Make arc section of LGF file (first pass)
+    consec <- get_consecutive(h)
+    
+    src <- trg <- list()
+    for (i in seq_along(consec)) {
+        src[[i]] <-
+            sapply(consec[[i]][, 1], function(X)
+                node$label[node$assoc == X & node$dim == i])
+        trg[[i]] <-
+            sapply(consec[[i]][, 2], function(X)
+                node$label[node$assoc == X & node$dim == i + 1])
+    }
+    
+    sources <- dplyr::filter(node, dim == 1)$label
+    targets <- dplyr::filter(node, dim == d)$label
+    arcs <- data.frame(
+        "source" = c(rep(0, length(sources)),
+                     abind::abind(src),
+                     targets),
+        "target" = c(sources,
+                     abind::abind(trg),
+                     rep(length(unlist(
+                         filt_h
+                     )) + 1, length(targets)))
     )
-  )
-  
-  # Filter out nodes which have no inArcs or no outArcs
-  keepidx <- seq_along(unlist(filt_h)) %in% arcs$target &
-      seq_along(unlist(filt_h)) %in% arcs$source
-  
-  readr::write_tsv(data.frame("@nodes"),
-                   path = path,
-                   col_names = FALSE)
-  readr::write_tsv(node[c(TRUE,keepidx,TRUE),], # keeping the dummy src and trg nodes
-                   path = path,
-                   col_names = TRUE,
-                   append = TRUE)
-  cat("\n", file = path, append = TRUE)
-  
-  # make the arcs table a second time, based on filtered nodes
-  sources <- sources[keepidx[sources]]
-  targets <- targets[keepidx[targets]]
-  src_bind <- abind::abind(src)
-  trg_bind <- abind::abind(trg)
-  
-  arckeepidx <- src_bind %in% which(keepidx) & trg_bind %in% which(keepidx)
-  src_bind <- src_bind[arckeepidx]
-  trg_bind <- trg_bind[arckeepidx]
-  
-  arcs <- data.frame(
-      "source" = c(
-          rep(0, length(sources)),
-          abind::abind(src),
-          targets
-      ),
-      "target" = c(
-          sources,
-          abind::abind(trg),
-          rep(length(unlist(filt_h)) + 1, length(targets))
-      )
-  )
-  
-  readr::write_tsv(
-    data.frame("@arcs"),
-    path = path,
-    col_names = FALSE,
-    append = TRUE
-  )
-  cat("\t\t -\n", file = path, append = TRUE)
-  readr::write_tsv(
-    arcs,
-    path = path,
-    col_names = FALSE,
-    append = TRUE,
-    na = ""
-  )
-
-    # Make attributes section of LGF file to note the sources
+    
+    # Recursively eliminate nodes that don't have sources however many arcs back
+    keepidx <- c(0, which(seq(l) %in% arcs$target & seq(l) %in% arcs$source), l+1)
+    src_bind <- abind::abind(src)
+    trg_bind <- abind::abind(trg)
+    
+    while(length(keepidx) != nrow(node)) {
+        # Filter out nodes that we don't need to keep
+        node <- node[node$label %in% keepidx, ]
+        
+        # make the arcs table based on filtered nodes
+        sources <- node$label[node$dim == 1][
+            node[node$dim == 1,]$label %in% arcs$source &
+                node[node$dim == 1,]$label %in% arcs$target]
+        targets <- node$label[node$dim == d][
+            node[node$dim == d,]$label %in% arcs$source &
+                node[node$dim == d,]$label %in% arcs$target]
+        
+        arckeepidx <- which(src_bind %in% keepidx & trg_bind %in% keepidx)
+        src_bind <- src_bind[arckeepidx]
+        trg_bind <- trg_bind[arckeepidx]
+        
+        arcs <- data.frame(
+            "source" = c(
+                rep(0, length(sources)),
+                src_bind,
+                targets
+            ),
+            "target" = c(
+                sources,
+                trg_bind,
+                rep(l + 1, length(targets))
+            )
+        )
+        
+        keepidx <- c(0, which(seq(l) %in% arcs$target & seq(l) %in% arcs$source), l+1)
+    }
+    
+    # Write the LGF file
+    readr::write_tsv(data.frame("@nodes"),
+                     path = path,
+                     col_names = FALSE)
+    readr::write_tsv(node,
+                     path = path,
+                     col_names = TRUE,
+                     append = TRUE)
+    
+    readr::write_tsv(
+        data.frame("@arcs"),
+        path = path,
+        col_names = FALSE,
+        append = TRUE
+    )
+    cat("\t\t -\n", file = path, append = TRUE)
+    readr::write_tsv(
+        arcs,
+        path = path,
+        col_names = FALSE,
+        append = TRUE,
+        na = ""
+    )
     cat("\n", file = path, append = TRUE)
     readr::write_tsv(
         data.frame("@attributes"),
