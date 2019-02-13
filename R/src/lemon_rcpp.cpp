@@ -251,101 +251,6 @@ int trans_func(double& x) {
     }
 }
 
-// Get prior probabilities for mixing prop expected values from empirical fitting results
-//arma::colvec cget_prior_prop(arma::mat red_class,
-//                           Rcpp::List mus,
-//                           Rcpp::List props,
-//                           int d) {
-//    int n_pairs = mus.size();
-//    arma::field<arma::colvec> assoc;
-//    arma::field<arma::colvec> marg_prop;
-//    arma::colvec unl_assoc;
-//    arma::colvec unl_marg_prop;
-//    arma::colvec sublens;
-//    arma::uvec bools;
-//    arma::uvec negidx;
-//    arma::uvec posidx;
-//    arma::uvec zeroidx;
-//    arma::cube propQ (3, 1, d);
-//    arma::colvec means;
-//
-//    // Get Combos
-//    arma::field<arma::mat> comb(n_pairs);
-//    for(int i = 0; i < n_pairs; i++) {
-//        comb(i) = Rcpp::as<arma::mat>(mus[i]);
-//        comb(i).transform([](double val) { return(trans_func(val)); } );
-//    }
-//
-//    // Which fits model which pairs of dims
-//    arma::mat dims = cstr_split(get_list_names(mus), "_");
-//
-//    // for each dim
-//    for(int i = 1; i <= d; i++) {
-//        //
-//        // Get marginal proportions
-//        //
-//
-//        assoc.set_size(d-1);
-//        marg_prop.set_size(d-1);
-//        int count = 0;
-//
-//        // Across all analyses where we consider the given dim
-//        for(int j = 0; j < dims.n_rows; j++) {
-//            bools = find(dims.row(j) == i);
-//            if(bools.size() > 0) {
-//                if(bools(0) == 0) {
-//                    assoc(count) = comb(j).col(0);
-//                } else {
-//                    assoc(count) = comb(j).col(1);
-//                }
-//                marg_prop(count) = Rcpp::as<arma::colvec>(props[j]);
-//                count += 1;
-//            }
-//        }
-//
-//        // Collapse fields into vectors
-//        int len_unl = 0;
-//        sublens.set_size(d-1);
-//        for(int j = 0; j < d-1; j++) {
-//            sublens(j) = assoc(j).size();
-//            len_unl += sublens(j);
-//        }
-//
-//        unl_assoc.set_size(len_unl);
-//        unl_marg_prop.set_size(len_unl);
-//        for(int j = 0; j < d-1; j++) {
-//            if(j == 0) {
-//                unl_assoc.subvec(0, size(assoc(0))) =  assoc(0);
-//                unl_marg_prop.subvec(0, size(assoc(0))) =  marg_prop(0);
-//            } else {
-//                unl_assoc.subvec(accu(sublens.subvec(0,j-1)), size(assoc(j))) =  assoc(j);
-//                unl_marg_prop.subvec(accu(sublens.subvec(0,j-1)), size(marg_prop(j))) =  marg_prop(j);
-//            }
-//        }
-//        negidx = find(unl_assoc == -1);
-//        zeroidx = find(unl_assoc == 0);
-//        posidx = find(unl_assoc == 1);
-//
-//        means = { mean(unl_marg_prop.elem(negidx)),
-//                    mean(unl_marg_prop.elem(zeroidx)),
-//                    mean(unl_marg_prop.elem(posidx)) };
-//        means = means/(accu(means));
-//        propQ.slice(i-1) = means;
-//
-//        //
-//        // Get proportion "paths"
-//        //
-//        red_class.col(i-1).replace(-1, propQ(0,0,i-1));
-//        red_class.col(i-1).replace(0, propQ(1,0,i-1));
-//        red_class.col(i-1).replace(1, propQ(2,0,i-1));
-//    }
-//
-//    arma::colvec prob = prod(red_class, 1);
-//    prob = prob/(accu(prob));
-//
-//    return prob;
-//}
-
 // Find which row in a matrix equals some vector
 // [[Rcpp::export]]
 arma::vec caccept(arma::mat x, arma::colvec y){
@@ -404,6 +309,11 @@ arma::colvec cget_prior_count(arma::mat red_class,
             idx.set_size(comb(j).n_rows);
 
             m = caccept(comb(j), { clsvec(dims(j,0)-1), clsvec(dims(j,1)-1) } );
+            if(std::all_of(m.begin(), m.end(), [](double x) { return x == 1.0; }))
+            {
+                continue;
+            }
+
             idx = find(m == 0);
             tagidx = find(labels.col(j) == (idx(0)+1));
 
