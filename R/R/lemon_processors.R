@@ -56,7 +56,7 @@ write_LGF <- function(h, d, path) {
     dims <- purrr::map(filt_h, length)
     node <-
         data.frame(
-            "label" = c(0, seq_along(unlist(filt_h)), 3 * d + 1),
+            "label" = c(0, seq_along(unlist(filt_h)), l + 1),
             "dim" = c(0, lapply(seq(dims), function(X)
                 rep(X, times = dims[[X]])) %>% unlist, d + 1),
             "assoc" = c(0, unlist(filt_h), 0)
