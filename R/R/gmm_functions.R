@@ -208,7 +208,7 @@ fconstr_pGMM <-
                 tol = tol,
                 LASSO = LASSO
             )
-            
+
             if (!any(names(curGMM) == "optim_err")) {
                 ll_temp <- curGMM$ll
                 df_temp <- curGMM$df
@@ -233,7 +233,7 @@ fconstr_pGMM <-
                 combos_out <- curGMM$combos
             }
         }
-        
+
         # If we never have a valid fit, just return NA for now.
         tryCatch(
             expr = list(
