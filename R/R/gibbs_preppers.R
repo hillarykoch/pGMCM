@@ -11,6 +11,45 @@ get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0) {
     (prior_count / n) / (sum(prior_count / n))
 }
 
+# This function will filter out classes that are really similar to each other
+# since they probably are not that informative and this task of computing
+# prior proportions (alpha) is super burdensome when there are too many classes
+reduce_by_hamming <- function(red_class, hamming_tol = 1, force_canonical = TRUE) {
+    M <- nrow(red_class)
+    fullidx <- seq(M)
+    out <- rep(NA, M)
+    
+    count <- 1
+    while(length(fullidx) != 0) {
+        cur <- red_class[fullidx[1],]
+        within_dist <- sapply(fullidx, function(X) sum(red_class[X,] != cur) <= hamming_tol)
+        candidate_indices <- fullidx[within_dist]
+        
+        if(length(candidate_indices) == 1) {
+            keepidx <- candidate_indices
+        } else {
+            keepidx <- sample(candidate_indices, size = 1)    
+        }
+        
+        out[count] <- keepidx
+        fullidx <- fullidx[!(fullidx %in% candidate_indices)]
+        count <- count + 1
+    }
+    
+    outidx <- out[!is.na(out)]
+    
+    # If we have canonical behavior, keep it
+    if(force_canonical) {
+        allneg <- which(sapply(1:M, function(X) all(red_class[X,] == -1)))
+        allone <- which(sapply(1:M, function(X) all(red_class[X,] == 0)))
+        allpos <- which(sapply(1:M, function(X) all(red_class[X,] == 1)))
+        outidx <- c(outidx, allneg, allpos, allone)
+    }
+    
+    red_class[outidx,]
+}
+
+
 # Averaging mus, sigmas in each dimension, recording rhos directly
 # The covariance is NOT handled correctly at the moment
 # Maybe put this is c++ later

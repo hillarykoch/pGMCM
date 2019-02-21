@@ -279,7 +279,6 @@ double func_to_optim(const arma::colvec& init_val,
 
     double mu = init_val(0);
     double sigma = exp(init_val(1));
-    //double rho = trans_rho_inv(init_val(2));
     double rho = init_val(2);
     int n = x.n_rows;
     int d = x.n_cols;
@@ -298,16 +297,13 @@ double func_to_optim(const arma::colvec& init_val,
         sigma_in.elem(zeroidx).ones();
 
         // This min part accounts for the possibility that sigma is actually bigger than 1
-        // The -1E-04 is just enforcing strict inequality between rho and sigma
-        // arma::colvec rho_option1 = { rho - 1E-04, 0 };
-        // arma::colvec rho_option2 = { rho_option1.max(), rho * sigma - 1E-04 };
-        //tmp_sigma = cget_constr_sigma(sigma_in, rho_option2.min(), combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
+        // Need to enforce strict inequality between rho and sigma
         tmp_sigma = cget_constr_sigma(sigma_in, rho, combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
         tmp_mu = mu*combos.row(i);
         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
     }
 
-    if( (abs3(rho) >= sigma) || (abs3(rho) >= 1) ) {
+    if( (abs3(rho) >= sigma)) {// || (abs3(rho) >= 1) ) {
         return std::numeric_limits<double>::infinity();
     }
 
@@ -404,7 +400,6 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
         int idx = repidx(0);
         double mu_in = abs3(mu_old(idx));
         double sigma_in = sigma_old(idx);
-        //arma::colvec init_val = arma::colvec({mu_in, log(sigma_in), trans_rho(rho_old)});
         arma::colvec init_val = arma::colvec( { mu_in, log(sigma_in), rho_old } );
 
         // Optimize using optim (for now)
