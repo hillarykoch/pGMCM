@@ -21,9 +21,8 @@ reduce_by_hamming <- function(red_class, hamming_tol = 1, force_canonical = TRUE
     
     count <- 1
     while(length(fullidx) != 0) {
-        cur <- red_class[fullidx[1],]
-        within_dist <- sapply(fullidx, function(X) sum(red_class[X,] != cur) <= hamming_tol)
-        candidate_indices <- fullidx[within_dist]
+        candidate_indices <- creduce_by_hamming(as.matrix(red_class), fullidx-1, hamming_tol, M)
+        candidate_indices <- fullidx[which(candidate_indices == 1)]
         
         if(length(candidate_indices) == 1) {
             keepidx <- candidate_indices

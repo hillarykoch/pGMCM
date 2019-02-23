@@ -575,167 +575,167 @@ fconstr_pGMCM <- function(x,
     }
 }
 
-# fit the second constrained version of pGMCM
-fconstr0_pGMCM <-
-    function(x,
-             lambda = NULL,
-             tol = 1e-06,
-             stepmax = 50,
-             itermax = 200,
-             convCrit = "GMM",
-             trace_params = FALSE,
-             ties_method = "random") {
-        # x: a matrix of data with rows for observations and columns for features
-        n <- nrow(x)   # sample size
-        d <- ncol(x)   # dimension
-
-        # initialize with pGMM
-        if (!is.null(lambda)) {
-            init <- fconstr0_pGMM(x,
-                                  lambda = 0,
-                                  tol = 1e-04,
-                                  itermax = 200)
-        } else{
-            init <- fconstr0_pGMM(
-                x,
-                lambda = c(.1, 0, 1),
-                tol = 1e-04,
-                itermax = 200
-            )
-        }
-        prop0 <- init$prop
-        mu0 <- init$mu
-        Sigma0 <- init$Sigma
-        k <- init$k
-
-        # Rescale empirical marginal distribution functions to avoid infinities
-        u <- apply(x, 2, function(X)
-            rank(X, ties.method = ties_method) / (n + 1)) %>%
-            data.frame %>%
-            setNames(sapply(seq(d), function(X)
-                paste0("u.", X)))
-
-        # Calculate corresponding pseudo-data
-        z <- lapply(seq(d), function(X)
-            get_pseudo(u[, X],
-                       mu0[, X],
-                       Sigma0[X, X, ],
-                       prop0, k)) %>%
-            abind(along = 2) %>%
-            as.data.frame %>%
-            setNames(sapply(seq(d), function(X)
-                paste0("z.", X)))
-
-        delta <- 1
-        outer_tol <- 1e-4
-
-        # Keep track of parameter estimates across each iteration
-        param.tr <- list()
-        param.tr[[1]] <- list(
-            "mu" = mu0,
-            "Sigma" = Sigma0,
-            "prop" = prop0,
-            "k" = k,
-            "df" = NA,
-            "lambda" = NA,
-            "cluster" = NA,
-            "post_prob" = NA
-        )
-
-        # Keep track of various likelihood estimates across each iteration
-        ll.tr <- matrix(rep(NA, 2 * (stepmax + 1)),
-                        nrow = 2,
-                        dimnames = list(c("gmm_ll", "gmcm_ll"), seq(stepmax +
-                                                                        1)))
-        ll.tr[, 1] <- -Inf
-
-        for (stp in 2:(stepmax + 1)) {
-            # estimation and model selection of penalized GMM for optimal lambda
-            temp_fit <-
-                fconstr0_pGMM(z,
-                              lambda = lambda,
-                              tol = tol,
-                              itermax = itermax)
-
-            # make updates
-            k <- temp_fit$k
-            zprop <- temp_fit$prop
-            zmu <- temp_fit$mu
-            zSigma <- temp_fit$Sigma
-            tag <- temp_fit$cluster
-            zlambda <- temp_fit$lambda
-            #ll_new <- temp_fit$ll
-            ll.tr["gmm_ll", stp] <- temp_fit$ll
-
-            param.tr[[stp]] <- list(
-                "mu" = zmu,
-                "Sigma" = zSigma,
-                "prop" = zprop,
-                "k" = k,
-                "df" = temp_fit$df,
-                "lambda" = zlambda,
-                "cluster" = tag,
-                "post_prob" = temp_fit$post_prob
-            )
-
-            if (k <= 1) {
-                break
-            }
-
-            # update pseudo-data
-            z <- lapply(seq(d), function(X)
-                get_pseudo(u[, X],
-                           zmu[, X],
-                           zSigma[X, X, ],
-                           zprop, k)) %>%
-                abind(along = 2) %>%
-                as.data.frame %>%
-                setNames(sapply(seq(d), function(X)
-                    paste0("z.", X)))
-
-
-            # measure the difference between two iteration
-            # delta <- abs((ll_new - ll_old) / ll_old)
-
-            # compute copula likelihood
-            ll.tr["gmcm_ll", stp] <-
-                cll0_gmm(as.matrix(z), zmu, zSigma, zprop, k) -
-                cmarg0_ll_gmm(as.matrix(z), zmu, zSigma, zprop, k)
-
-            # measure the difference between two iteration
-            delta <- switch(
-                convCrit,
-                "GMCM" = abs(ll.tr["gmcm_ll", stp] - ll.tr["gmcm_ll", stp -
-                                                               1]),
-                "GMM" = abs(ll.tr["gmm_ll", stp] - ll.tr["gmm_ll", stp -
-                                                             1])
-            )
-            if (is.na(delta)) {
-                delta <- 1
-            }
-            #ll_old <- ll_new
-
-            # if(delta < tol){ break }
-            # if(stp > stepmax){ break }
-            if (delta < outer_tol) {
-                break
-            }
-            if (stp == stepmax + 1) {
-                warning("Maximum number of steps reached before convergence.")
-            }
-        }
-
-        best_stp <- which.max(ll.tr["gmcm_ll", ])
-
-        out <- param.tr[[best_stp]]
-        out$ll_gmcm <- ll.tr["gmcm_ll", best_stp]
-
-        if (trace_params) {
-            out$trace <- param.tr
-            out
-        } else{
-            out
-        }
-
-        #list("k" = k, "prop" = zprop, "mu" = zmu, "Sigma" = zSigma, "cluster" = tag, "lambda" = zlambda, "ll" = ll_old)
-    }
+# # fit the second constrained version of pGMCM
+# fconstr0_pGMCM <-
+#     function(x,
+#              lambda = NULL,
+#              tol = 1e-06,
+#              stepmax = 50,
+#              itermax = 200,
+#              convCrit = "GMM",
+#              trace_params = FALSE,
+#              ties_method = "random") {
+#         # x: a matrix of data with rows for observations and columns for features
+#         n <- nrow(x)   # sample size
+#         d <- ncol(x)   # dimension
+# 
+#         # initialize with pGMM
+#         if (!is.null(lambda)) {
+#             init <- fconstr0_pGMM(x,
+#                                   lambda = 0,
+#                                   tol = 1e-04,
+#                                   itermax = 200)
+#         } else{
+#             init <- fconstr0_pGMM(
+#                 x,
+#                 lambda = c(.1, 0, 1),
+#                 tol = 1e-04,
+#                 itermax = 200
+#             )
+#         }
+#         prop0 <- init$prop
+#         mu0 <- init$mu
+#         Sigma0 <- init$Sigma
+#         k <- init$k
+# 
+#         # Rescale empirical marginal distribution functions to avoid infinities
+#         u <- apply(x, 2, function(X)
+#             rank(X, ties.method = ties_method) / (n + 1)) %>%
+#             data.frame %>%
+#             setNames(sapply(seq(d), function(X)
+#                 paste0("u.", X)))
+# 
+#         # Calculate corresponding pseudo-data
+#         z <- lapply(seq(d), function(X)
+#             get_pseudo(u[, X],
+#                        mu0[, X],
+#                        Sigma0[X, X, ],
+#                        prop0, k)) %>%
+#             abind(along = 2) %>%
+#             as.data.frame %>%
+#             setNames(sapply(seq(d), function(X)
+#                 paste0("z.", X)))
+# 
+#         delta <- 1
+#         outer_tol <- 1e-4
+# 
+#         # Keep track of parameter estimates across each iteration
+#         param.tr <- list()
+#         param.tr[[1]] <- list(
+#             "mu" = mu0,
+#             "Sigma" = Sigma0,
+#             "prop" = prop0,
+#             "k" = k,
+#             "df" = NA,
+#             "lambda" = NA,
+#             "cluster" = NA,
+#             "post_prob" = NA
+#         )
+# 
+#         # Keep track of various likelihood estimates across each iteration
+#         ll.tr <- matrix(rep(NA, 2 * (stepmax + 1)),
+#                         nrow = 2,
+#                         dimnames = list(c("gmm_ll", "gmcm_ll"), seq(stepmax +
+#                                                                         1)))
+#         ll.tr[, 1] <- -Inf
+# 
+#         for (stp in 2:(stepmax + 1)) {
+#             # estimation and model selection of penalized GMM for optimal lambda
+#             temp_fit <-
+#                 fconstr0_pGMM(z,
+#                               lambda = lambda,
+#                               tol = tol,
+#                               itermax = itermax)
+# 
+#             # make updates
+#             k <- temp_fit$k
+#             zprop <- temp_fit$prop
+#             zmu <- temp_fit$mu
+#             zSigma <- temp_fit$Sigma
+#             tag <- temp_fit$cluster
+#             zlambda <- temp_fit$lambda
+#             #ll_new <- temp_fit$ll
+#             ll.tr["gmm_ll", stp] <- temp_fit$ll
+# 
+#             param.tr[[stp]] <- list(
+#                 "mu" = zmu,
+#                 "Sigma" = zSigma,
+#                 "prop" = zprop,
+#                 "k" = k,
+#                 "df" = temp_fit$df,
+#                 "lambda" = zlambda,
+#                 "cluster" = tag,
+#                 "post_prob" = temp_fit$post_prob
+#             )
+# 
+#             if (k <= 1) {
+#                 break
+#             }
+# 
+#             # update pseudo-data
+#             z <- lapply(seq(d), function(X)
+#                 get_pseudo(u[, X],
+#                            zmu[, X],
+#                            zSigma[X, X, ],
+#                            zprop, k)) %>%
+#                 abind(along = 2) %>%
+#                 as.data.frame %>%
+#                 setNames(sapply(seq(d), function(X)
+#                     paste0("z.", X)))
+# 
+# 
+#             # measure the difference between two iteration
+#             # delta <- abs((ll_new - ll_old) / ll_old)
+# 
+#             # compute copula likelihood
+#             ll.tr["gmcm_ll", stp] <-
+#                 cll0_gmm(as.matrix(z), zmu, zSigma, zprop, k) -
+#                 cmarg0_ll_gmm(as.matrix(z), zmu, zSigma, zprop, k)
+# 
+#             # measure the difference between two iteration
+#             delta <- switch(
+#                 convCrit,
+#                 "GMCM" = abs(ll.tr["gmcm_ll", stp] - ll.tr["gmcm_ll", stp -
+#                                                                1]),
+#                 "GMM" = abs(ll.tr["gmm_ll", stp] - ll.tr["gmm_ll", stp -
+#                                                              1])
+#             )
+#             if (is.na(delta)) {
+#                 delta <- 1
+#             }
+#             #ll_old <- ll_new
+# 
+#             # if(delta < tol){ break }
+#             # if(stp > stepmax){ break }
+#             if (delta < outer_tol) {
+#                 break
+#             }
+#             if (stp == stepmax + 1) {
+#                 warning("Maximum number of steps reached before convergence.")
+#             }
+#         }
+# 
+#         best_stp <- which.max(ll.tr["gmcm_ll", ])
+# 
+#         out <- param.tr[[best_stp]]
+#         out$ll_gmcm <- ll.tr["gmcm_ll", best_stp]
+# 
+#         if (trace_params) {
+#             out$trace <- param.tr
+#             out
+#         } else{
+#             out
+#         }
+# 
+#         #list("k" = k, "prop" = zprop, "mu" = zmu, "Sigma" = zSigma, "cluster" = tag, "lambda" = zlambda, "ll" = ll_old)
+#     }

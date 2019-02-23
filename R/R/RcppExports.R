@@ -33,6 +33,10 @@ cget_prior_count <- function(red_class, mus, labels, d, n, dist_tol = 0L) {
     .Call(`_pGMCM_cget_prior_count`, red_class, mus, labels, d, n, dist_tol)
 }
 
+creduce_by_hamming <- function(red_class, fullidx, hamming_tol, M) {
+    .Call(`_pGMCM_creduce_by_hamming`, red_class, fullidx, hamming_tol, M)
+}
+
 cget_true_assoc_idx <- function(red_class, true_assoc) {
     .Call(`_pGMCM_cget_true_assoc_idx`, red_class, true_assoc)
 }
@@ -81,14 +85,6 @@ cget_constr_sigma <- function(sigma, rho, combos, d) {
     .Call(`_pGMCM_cget_constr_sigma`, sigma, rho, combos, d)
 }
 
-trans_rho <- function(rho) {
-    .Call(`_pGMCM_trans_rho`, rho)
-}
-
-trans_rho_inv <- function(rho) {
-    .Call(`_pGMCM_trans_rho_inv`, rho)
-}
-
 func_to_optim <- function(init_val, x, h_est, combos) {
     .Call(`_pGMCM_func_to_optim`, init_val, x, h_est, combos)
 }
@@ -101,38 +97,6 @@ cfconstr_pGMM <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citerm
     .Call(`_pGMCM_cfconstr_pGMM`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol, LASSO)
 }
 
-bind_diags <- function(Sigma_in) {
-    .Call(`_pGMCM_bind_diags`, Sigma_in)
-}
-
-bind_offdiags <- function(Sigma_in) {
-    .Call(`_pGMCM_bind_offdiags`, Sigma_in)
-}
-
-get_sigma_optim <- function(diagbind, combos) {
-    .Call(`_pGMCM_get_sigma_optim`, diagbind, combos)
-}
-
-get_mu_optim <- function(mu_in, combos) {
-    .Call(`_pGMCM_get_mu_optim`, mu_in, combos)
-}
-
-get_rho_optim <- function(rhobind, combos) {
-    .Call(`_pGMCM_get_rho_optim`, rhobind, combos)
-}
-
-func_to_optim0 <- function(init_val, x, h_est, combos, a, b, c, negidx) {
-    .Call(`_pGMCM_func_to_optim0`, init_val, x, h_est, combos, a, b, c, negidx)
-}
-
-optim0_rcpp <- function(init_val, x, h_est, combos, a, b, c, negidx) {
-    .Call(`_pGMCM_optim0_rcpp`, init_val, x, h_est, combos, a, b, c, negidx)
-}
-
-cfconstr0_pGMM <- function(x, prop, mu, Sigma, combos, k, df, lambda, citermax, tol) {
-    .Call(`_pGMCM_cfconstr0_pGMM`, x, prop, mu, Sigma, combos, k, df, lambda, citermax, tol)
-}
-
 cduvnorm <- function(x, mu, sigma) {
     .Call(`_pGMCM_cduvnorm`, x, mu, sigma)
 }
@@ -143,13 +107,5 @@ cmarg_ll_gmm <- function(z, mu, sigma, prop, combos, k) {
 
 cll_gmm <- function(z, mu, sigma, rho, prop, combos, k) {
     .Call(`_pGMCM_cll_gmm`, z, mu, sigma, rho, prop, combos, k)
-}
-
-cmarg0_ll_gmm <- function(z, mu, Sigma, prop, k) {
-    .Call(`_pGMCM_cmarg0_ll_gmm`, z, mu, Sigma, prop, k)
-}
-
-cll0_gmm <- function(z, mu, Sigma, prop, k) {
-    .Call(`_pGMCM_cll0_gmm`, z, mu, Sigma, prop, k)
 }
 
