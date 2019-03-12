@@ -42,7 +42,7 @@ reduce_by_hamming <- function(red_class, hamming_tol = 1, force_canonical = TRUE
         allneg <- which(sapply(1:M, function(X) all(red_class[X,] == -1)))
         allone <- which(sapply(1:M, function(X) all(red_class[X,] == 0)))
         allpos <- which(sapply(1:M, function(X) all(red_class[X,] == 1)))
-        outidx <- c(outidx, allneg, allpos, allone)
+        outidx <- unique(c(outidx, allneg, allpos, allone))
     }
     
     red_class[outidx,]
