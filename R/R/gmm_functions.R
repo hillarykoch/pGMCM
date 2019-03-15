@@ -160,18 +160,20 @@ fconstr_pGMM <-
         # This should actually underestimate true rho, mu and overestimate true sigma
         init <- GMM_kmeans(x, kmax)
         prop0 <- init$prop
-        mu0 <- c(init$mu %>% `[` (init$mu > 0),
-                 init$mu %>% `[` (init$mu < 0) %>% abs) %>%
+        mu0 <- c(init$mu %>% `[` (init$mu > 0.5),
+                 init$mu %>% `[` (init$mu < -0.5) %>% abs) %>%
             mean %>%
+            max(.5) %>%
             `*` (combos)
         sigma0 <- apply(init$sigma, 3, diag) %>%
             mean %>%
             `*` (combos) %>%
             abs
         sigma0[sigma0 == 0] <- 1
-        rho0 <- c(init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] > 0),
-                  init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] < 0) %>% abs) %>%
+        rho0 <- c(init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] > 0.2),
+                  init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] < -0.2) %>% abs) %>%
             mean %>%
+            max(.1) %>%
             matrix
 
         if (sum(prop0 == 0) > 0) {

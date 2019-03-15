@@ -48,7 +48,7 @@ arma::mat cassociate(arma::mat& paths,
         c[count-2] = z;
     }
 
-    // this range is because we dont need dummy notes "src" and "trg"
+    // this range is because we dont need dummy nodes "src" and "trg"
     for(auto i = 0; i < num_paths; i++)
     {
         for(auto j = 0; j < sz; j++)
