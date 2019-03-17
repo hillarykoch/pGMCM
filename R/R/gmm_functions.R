@@ -170,8 +170,8 @@ fconstr_pGMM <-
             `*` (combos) %>%
             abs
         sigma0[sigma0 == 0] <- 1
-        rho0 <- c(init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] > 0.2),
-                  init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] < -0.2) %>% abs) %>%
+        rho0 <- c(init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] > 0),
+                  init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] < 0) %>% abs) %>%
             mean %>%
             max(.1) %>%
             matrix
