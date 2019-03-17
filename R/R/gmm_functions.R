@@ -196,7 +196,7 @@ fconstr_pGMM <-
         LASSO <- ifelse(all(penaltyType == "LASSO"), 1, 0)
         for (i in seq_along(lambda)) {
             # estimate penalized GMM for a given lambda
-            curGMM <- cfconstr_pGMM(
+            curGMM <- cfconstr_pgmm(
                 x = x,
                 prop = prop0,
                 mu = mu0,

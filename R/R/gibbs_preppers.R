@@ -58,7 +58,7 @@ get_hyperparams <- function(fits, d, red_class) {
     spl <- names(fits) %>%
         str_split(pattern = "_") %>%
         purrr::map(as.numeric) %>%
-        abind(along = 2) %>%
+        abind::abind(along = 2) %>%
         t
     mus <- purrr::map(fits, "mu") %>% purrr::map(abs)
     sigmas <- purrr::map(fits, "sigma")
@@ -84,13 +84,14 @@ get_hyperparams <- function(fits, d, red_class) {
         }
         mu0_temp[i] <- mean(muvec)
         Psi0_temp[i, i] <-
-            mean(sigmavec) # This covariance probably isnt correct
+            #mean(sigmavec) # This covariance probably isnt correct
+            max(sigmavec) * 5 # This covariance probably isnt correct
     }
     
     for (i in seq(nrow(spl))) {
         # This covariance probably isnt correct
         Psi0_temp[spl[i, 1], spl[i, 2]] <-
-            Psi0_temp[spl[i, 2], spl[i, 1]] <- rhos[[i]]
+            Psi0_temp[spl[i, 2], spl[i, 1]] <- rhos[[i]] #/ 10
     }
     
     
