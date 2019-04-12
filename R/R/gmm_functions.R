@@ -123,7 +123,8 @@ fconstr_pGMM <-
              lambda = NULL,
              tol = 1e-06,
              itermax = 200,
-             penaltyType = c("SCAD", "LASSO")) {
+             penaltyType = c("SCAD", "LASSO"),
+             bound = 0) {
         # x: a matrix of data with rows for observations and columns for features
         # kmax: max number of clusters
         # lambda: a parameter of penalty term
@@ -208,7 +209,8 @@ fconstr_pGMM <-
                 lambda = lambda[i],
                 citermax = itermax,
                 tol = tol,
-                LASSO = LASSO
+                LASSO = LASSO,
+                bound = bound
             )
 
             if (!any(names(curGMM) == "optim_err")) {
@@ -267,20 +269,20 @@ fconstr_pGMM <-
 #         # lambda: a parameter of penalty term
 #         # d: number of replicates
 #         # h: number of components (currently, make only 3)
-# 
+#
 #         if (is.null(lambda)) {
 #             lambda <-
 #                 sqrt(log(nrow(x))) * 10 ^ seq(-1 , 0.5, length.out = 20) # set the range of lambda
 #         }
-# 
+#
 #         n <- nrow(x)
 #         d <- ncol(x)
-# 
+#
 #         # Assuming there are 3 components {-1,0,1}, then max clusters should be 3^d
 #         # where d is the number of replicates
 #         kmax <- 3 ^ d
 #         combos <- rep(list(-1:1), d) %>% expand.grid %>% as.matrix
-# 
+#
 #         # 1, 3, or 4 df depending on whether or not we need to estimate
 #         # rho, sigma, and mu in this constrained setting
 #         df <- rep(NA, kmax)
@@ -293,7 +295,7 @@ fconstr_pGMM <-
 #                 df[i] <- 1
 #             }
 #         }
-# 
+#
 #         # K-means Initialization
 #         init <- GMM_kmeans(x, kmax)
 #         prop0 <- init$prop
@@ -312,7 +314,7 @@ fconstr_pGMM <-
 #                 init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] < 0) %>% mean,
 #                 init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] > 0) %>% mean
 #             )
-# 
+#
 #         rho0_combos <- rep(0, kmax) %>%
 #             replace(apply(combos, 1, sum) == -2, rho0[1]) %>%
 #             replace(apply(combos, 1, sum) == 0 &
@@ -325,7 +327,7 @@ fconstr_pGMM <-
 #         for (i in seq_along(Sigma0)) {
 #             Sigma0[[i]][1, 2] <- Sigma0[[i]][2, 1] <- rho0_combos[i]
 #         }
-# 
+#
 #         # Eliminate empty clusters
 #         if (sum(prop0 == 0) > 0) {
 #             idx <- prop0 > 0
@@ -335,14 +337,14 @@ fconstr_pGMM <-
 #             sigma0 <- sigma0[idx]
 #             df <- df[idx]
 #         }
-# 
+#
 #         bestBIC <- -Inf
-# 
+#
 #         # Rcpp will call x a "List" if it is a data frame
 #         if (is.data.frame(x)) {
 #             x <- as.matrix(x)
 #         }
-# 
+#
 #         for (i in seq_along(lambda)) {
 #             # estimate penalized GMM for a given lambda
 #             curGMM <- cfconstr0_pGMM(
@@ -357,11 +359,11 @@ fconstr_pGMM <-
 #                 citermax = itermax,
 #                 tol = tol
 #             )
-# 
+#
 #             ll_temp <- curGMM$ll
 #             df_temp <- curGMM$df
 #             BIC  <- sum(ll_temp) - sum(df_temp) * log(n) / 2
-# 
+#
 #             # update parameters
 #             if (bestBIC < BIC) {
 #                 k_out <- curGMM$k
@@ -376,7 +378,7 @@ fconstr_pGMM <-
 #                 post_prob <- curGMM$post_prob
 #             }
 #         }
-# 
+#
 #         list(
 #             "k" = k_out,
 #             "prop" = prop_out,

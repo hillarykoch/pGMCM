@@ -97,6 +97,18 @@ cfconstr_pGMM <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citerm
     .Call(`_pGMCM_cfconstr_pGMM`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol, LASSO)
 }
 
+func_to_optim_bound <- function(init_val, x, h_est, combos, bound) {
+    .Call(`_pGMCM_func_to_optim_bound`, init_val, x, h_est, combos, bound)
+}
+
+optim_rcpp_bound <- function(init_val, x, h_est, combos, bound) {
+    .Call(`_pGMCM_optim_rcpp_bound`, init_val, x, h_est, combos, bound)
+}
+
+cfconstr_pgmm <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol, LASSO, bound = 0.0) {
+    .Call(`_pGMCM_cfconstr_pgmm`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol, LASSO, bound)
+}
+
 cduvnorm <- function(x, mu, sigma) {
     .Call(`_pGMCM_cduvnorm`, x, mu, sigma)
 }

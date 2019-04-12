@@ -329,6 +329,59 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// func_to_optim_bound
+double func_to_optim_bound(const arma::colvec& init_val, arma::mat& x, arma::mat& h_est, arma::mat& combos, double& bound);
+RcppExport SEXP _pGMCM_func_to_optim_bound(SEXP init_valSEXP, SEXP xSEXP, SEXP h_estSEXP, SEXP combosSEXP, SEXP boundSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec& >::type init_val(init_valSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type h_est(h_estSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type combos(combosSEXP);
+    Rcpp::traits::input_parameter< double& >::type bound(boundSEXP);
+    rcpp_result_gen = Rcpp::wrap(func_to_optim_bound(init_val, x, h_est, combos, bound));
+    return rcpp_result_gen;
+END_RCPP
+}
+// optim_rcpp_bound
+arma::vec optim_rcpp_bound(const arma::vec& init_val, arma::mat& x, arma::mat& h_est, arma::mat& combos, double& bound);
+RcppExport SEXP _pGMCM_optim_rcpp_bound(SEXP init_valSEXP, SEXP xSEXP, SEXP h_estSEXP, SEXP combosSEXP, SEXP boundSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type init_val(init_valSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type h_est(h_estSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type combos(combosSEXP);
+    Rcpp::traits::input_parameter< double& >::type bound(boundSEXP);
+    rcpp_result_gen = Rcpp::wrap(optim_rcpp_bound(init_val, x, h_est, combos, bound));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cfconstr_pgmm
+Rcpp::List cfconstr_pgmm(arma::mat& x, arma::rowvec prop, arma::mat mu, arma::mat sigma, double rho, arma::mat combos, int k, arma::rowvec df, int lambda, int citermax, double tol, unsigned int LASSO, double bound);
+RcppExport SEXP _pGMCM_cfconstr_pgmm(SEXP xSEXP, SEXP propSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP rhoSEXP, SEXP combosSEXP, SEXP kSEXP, SEXP dfSEXP, SEXP lambdaSEXP, SEXP citermaxSEXP, SEXP tolSEXP, SEXP LASSOSEXP, SEXP boundSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type prop(propSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type combos(combosSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< int >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< int >::type citermax(citermaxSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type LASSO(LASSOSEXP);
+    Rcpp::traits::input_parameter< double >::type bound(boundSEXP);
+    rcpp_result_gen = Rcpp::wrap(cfconstr_pgmm(x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol, LASSO, bound));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cduvnorm
 arma::colvec cduvnorm(arma::colvec x, double mu, double sigma);
 RcppExport SEXP _pGMCM_cduvnorm(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP) {
@@ -401,6 +454,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pGMCM_func_to_optim", (DL_FUNC) &_pGMCM_func_to_optim, 4},
     {"_pGMCM_optim_rcpp", (DL_FUNC) &_pGMCM_optim_rcpp, 4},
     {"_pGMCM_cfconstr_pGMM", (DL_FUNC) &_pGMCM_cfconstr_pGMM, 12},
+    {"_pGMCM_func_to_optim_bound", (DL_FUNC) &_pGMCM_func_to_optim_bound, 5},
+    {"_pGMCM_optim_rcpp_bound", (DL_FUNC) &_pGMCM_optim_rcpp_bound, 5},
+    {"_pGMCM_cfconstr_pgmm", (DL_FUNC) &_pGMCM_cfconstr_pgmm, 13},
     {"_pGMCM_cduvnorm", (DL_FUNC) &_pGMCM_cduvnorm, 3},
     {"_pGMCM_cmarg_ll_gmm", (DL_FUNC) &_pGMCM_cmarg_ll_gmm, 6},
     {"_pGMCM_cll_gmm", (DL_FUNC) &_pGMCM_cll_gmm, 7},

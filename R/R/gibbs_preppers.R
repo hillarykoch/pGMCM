@@ -109,8 +109,8 @@ get_hyperparams <- function(fits, d, red_class) {
     
     # Update Psi0 based on association patterns
     for (i in seq(nrow(red_class))) {
-        diag(Psi0[, , i]) <- diag(Psi0_temp) * red_class[i, ] %>%
-            abs
+        diag(Psi0[, , i]) <- as.numeric(unname(diag(Psi0_temp) * red_class[i, ] %>%
+            abs))
         diag(Psi0[, , i]) <- replace(diag(Psi0[, , i]),
                                      list = diag(Psi0[, , i]) == 0,
                                      values = 1)

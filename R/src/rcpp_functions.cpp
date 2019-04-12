@@ -257,20 +257,6 @@ arma::mat cget_constr_sigma(arma::rowvec sigma, double rho, arma::rowvec combos,
     return Sigma;
 }
 
-// // Transform rho to constrain to be in [-1,1]
-// // [[Rcpp::export]]
-// double trans_rho(double rho) {
-//     double out = log(rho + 1) - log(1 - rho);
-//     return out;
-// }
-// 
-// // Transform rho to constrain to be in [-1,1]
-// // [[Rcpp::export]]
-// double trans_rho_inv(double rho) {
-//     double out = (exp(rho) - 1) / (exp(rho) + 1);
-//     return out;
-// }
-
 // objective function to be optimized
 // [[Rcpp::export]]
 double func_to_optim(const arma::colvec& init_val,
@@ -508,11 +494,12 @@ Rcpp::List cfconstr_pGMM(arma::mat& x,
 
 // objective function to be optimized
 // [[Rcpp::export]]
-double func_to_optim_test(const arma::colvec& init_val,
+double func_to_optim_bound(const arma::colvec& init_val,
                      arma::mat& x,
                      arma::mat& h_est,
-                     arma::mat& combos) {
-    
+                     arma::mat& combos,
+                     double& bound) {
+
     double mu = init_val(0);
     double sigma = exp(init_val(1));
     double rho = init_val(2);
@@ -520,56 +507,58 @@ double func_to_optim_test(const arma::colvec& init_val,
     int d = x.n_cols;
     int k = h_est.n_cols;
     double nll;
-    
+
     arma::mat tmp_sigma(d, d, arma::fill::none);
     arma::rowvec tmp_mu(d, arma::fill::none);
     arma::mat pdf_est(n, k, arma::fill::none);
-    
+
     for(int i = 0; i < k; ++i) {
         // get sigma_in to pass to cget_constr_sigma
         // This amount to finding the diagonal of Sigma
         arma::rowvec sigma_in(abs(sigma*combos.row(i)));
         arma::uvec zeroidx = find(combos.row(i) == 0);
         sigma_in.elem(zeroidx).ones();
-        
+
         // This min part accounts for the possibility that sigma is actually bigger than 1
         // Need to enforce strict inequality between rho and sigma
         tmp_sigma = cget_constr_sigma(sigma_in, rho, combos.row(i), d); // rho * sigma should constrain rho to be less than sigma in the optimization
         tmp_mu = mu*combos.row(i);
         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
     }
-    
-    if( (abs3(rho) >= sigma)) {// || (abs3(rho) >= 1) ) {
+
+    if( (abs3(rho) >= sigma)) {
         return std::numeric_limits<double>::infinity();
     }
-    
-    if( (abs3(mu) < 1.65)) {
+
+    if( (abs3(mu) < bound)) {
         return std::numeric_limits<double>::infinity();
     }
-    
+
     nll = -accu(h_est % log(pdf_est));
     return nll;
 }
 
 // optimize objective function using 'optim' is R-package 'stats'
 // [[Rcpp::export]]
-arma::vec optim_rcpp_test(const arma::vec& init_val,
+arma::vec optim_rcpp_bound(const arma::vec& init_val,
                      arma::mat& x,
                      arma::mat& h_est,
-                     arma::mat& combos){
-    
+                     arma::mat& combos,
+                     double& bound){
+
     Rcpp::Environment stats("package:stats");
     Rcpp::Function optim = stats["optim"];
-    
+
     try{
         Rcpp::List opt = optim(Rcpp::_["par"] = init_val,
-                               Rcpp::_["fn"] = Rcpp::InternalFunction(&func_to_optim_test),
+                               Rcpp::_["fn"] = Rcpp::InternalFunction(&func_to_optim_bound),
                                Rcpp::_["method"] = "Nelder-Mead",
                                Rcpp::_["x"] = x,
                                Rcpp::_["h_est"] = h_est,
-                               Rcpp::_["combos"] = combos);
+                               Rcpp::_["combos"] = combos,
+                               Rcpp::_["bound"] = bound);
         arma::vec mles = Rcpp::as<arma::vec>(opt["par"]);
-        
+
         return mles;
     }
     catch(...){
@@ -593,8 +582,9 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
                          int lambda,
                          int citermax,
                          double tol,
-                         unsigned int LASSO) {
-    
+                         unsigned int LASSO,
+                         double bound = 0.0) {
+
     const int n = x.n_rows;
     const int d = x.n_cols;
     double delta = 1;
@@ -610,15 +600,15 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
     arma::mat h_est(n, k, arma::fill::none);
     double term; // for SCAD
     arma::colvec err_test =  { NA_REAL };
-    
+
     double thresh = 1E-03;
-    
+
     for(int step = 0; step < citermax; ++step) {
         // E step
         for(int i = 0; i < k; ++i) {
             arma::rowvec tmp_mu = mu_old.row(i);
             tmp_sigma = cget_constr_sigma(sigma_old.row(i), rho_old, combos.row(i), d);
-            
+
             try {
                 pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
                 prob0.col(i) = pdf_est.col(i) * prop_old(i);
@@ -628,33 +618,40 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
                 return Rcpp::List::create(Rcpp::Named("optim_err") = NA_REAL);
             }
         }
-        
+
         h_est.set_size(n, k);
         for(int i = 0; i < n; ++i) {
             h_est.row(i) = prob0.row(i)/(sum(prob0.row(i)) * 1.0L);
         }
-        
+
         // M step
         // update mean and variance covariance with numerical optimization
-        
+
         // Select the mean and variance associated with reproducibility
         arma::uvec repidx = find(combos, 0);
         int idx = repidx(0);
-        double mu_in = std::max(abs3(mu_old(idx)), 1.65);
+        double mu_in = std::max(abs3(mu_old(idx)), bound);
+
         double sigma_in = sigma_old(idx);
         arma::colvec init_val = arma::colvec( { mu_in, log(sigma_in), rho_old } );
-        
+
         // Optimize using optim (for now)
         arma::colvec param_new(3, arma::fill::none);
-        param_new = optim_rcpp_test(init_val, x, h_est, combos);
-        
+
+        if(bound == 0.0) {
+            param_new = optim_rcpp(init_val, x, h_est, combos);
+        } else {
+            param_new = optim_rcpp_bound(init_val, x, h_est, combos, bound);
+        }
+
+
         if(param_new(0) == err_test(0)) {
             return Rcpp::List::create(Rcpp::Named("optim_err") = NA_REAL);
         }
-        
+
         // transform sigma back
         param_new(1) = exp(param_new(1));
-        
+
         prop_new.set_size(k);
         if(LASSO == 1) {
             // update proportion via LASSO penalty
@@ -675,10 +672,10 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
             }
         }
         prop_new = prop_new/(sum(prop_new) * 1.0L); // renormalize weights
-        
+
         // calculate difference between two iterations
         delta = sum(abs(prop_new - prop_old));
-        
+
         // eliminate small clusters
         if(sum(prop_new == 0) > 0) {
             arma::uvec idx = find(prop_new > 0);
@@ -686,17 +683,17 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
             prop_old = trans(prop_new.elem(idx));
             combos = combos.rows(idx);
             df = trans(df.elem(idx));
-            
+
             mu_old.set_size(k,d);
             mu_old = combos*param_new(0);
-            
+
             sigma_old.set_size(k,d);
             sigma_old = abs(combos*param_new(1));
             arma::uvec zeroidx2 = find(sigma_old == 0);
             sigma_old.elem(zeroidx2).ones();
-            
+
             rho_old = param_new(2);
-            
+
             pdf_est = pdf_est.cols(idx);
             prob0 = prob0.cols(idx);
             h_est = h_est.cols(idx);
@@ -705,25 +702,25 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
         else{
             prop_old = prop_new;
             mu_old = combos*param_new(0);
-            
+
             sigma_old = abs(combos*param_new(1));
             arma::uvec zeroidx2 = find(sigma_old == 0);
             sigma_old.elem(zeroidx2).ones();
-            
+
             rho_old = param_new(2);
         }
-        
+
         //calculate cluster with maximum posterior probability
         tag = index_max(h_est, 1);
-        
+
         if(delta < tol)
             break;
-        
+
         if(k <= 1)
             break;
-        
+
     }
-    
+
     // update the likelihood for output
     for(int i = 0; i < k; ++i) {
         arma::rowvec tmp_mu = mu_old.row(i);
@@ -731,7 +728,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
         prob0.col(i) = pdf_est.col(i) * prop_old(i);
     }
-    
+
     return Rcpp::List::create(Rcpp::Named("k") = k,
                               Rcpp::Named("prop") = prop_old,
                               Rcpp::Named("mu") = mu_old,
@@ -749,7 +746,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 // //
 // // Stuff for the less constrained (constr0) penalized Gaussian mixture model
 // //
-// 
+//
 // // Bind diagonals from covariances into one matrix (for use by optim)
 // // [[Rcpp::export]]
 // arma::mat bind_diags(arma::cube Sigma_in) {
@@ -760,21 +757,21 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     }
 //     return diagbind;
 // }
-// 
+//
 // // Bind off-diagonals from covariances into one matrix (for use by optim)
 // // [[Rcpp::export]]
 // arma::colvec bind_offdiags(arma::cube Sigma_in) {
 //     arma::colvec rhobind = Sigma_in.tube(1,0);
 //     return rhobind;
 // }
-// 
+//
 // // get vector of association-related variances for optim input
 // // [[Rcpp::export]]
 // arma::colvec get_sigma_optim(arma::mat diagbind, arma::mat combos) {
 //     arma::uvec neg = find(combos == -1);
 //     arma::uvec pos = find(combos == 1);
 //     arma::colvec sig_out;
-// 
+//
 //     if(neg.n_rows > 0 & pos.n_rows > 0){
 //         sig_out = { diagbind(neg(0)), diagbind(pos(0)) };
 //     } else if(neg.n_rows > 0 & pos.n_rows == 0){
@@ -784,14 +781,14 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     }
 //     return sig_out;
 // }
-// 
+//
 // // get vector of association-related means for optim input
 // // [[Rcpp::export]]
 // arma::colvec get_mu_optim(arma::mat mu_in, arma::mat combos) {
 //     arma::uvec neg = find(combos == -1);
 //     arma::uvec pos = find(combos == 1);
 //     arma::colvec mu_out;
-// 
+//
 //     if(neg.n_rows > 0 & pos.n_rows > 0){
 //         mu_out = { mu_in(neg(0)), mu_in(pos(0)) };
 //     } else if(neg.n_rows > 0 & pos.n_rows == 0){
@@ -801,19 +798,19 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     }
 //     return mu_out;
 // }
-// 
+//
 // // get rho for optim
 // // [[Rcpp::export]]
 // arma::colvec get_rho_optim(arma::colvec rhobind, arma::mat combos) {
 //     int n = combos.n_rows;
 //     int len = 0;
 //     arma::colvec rho_out(3);
-// 
+//
 //     arma::colvec twoneg = { -1, -1 };
 //     arma::colvec twopos = { 1, 1 };
 //     arma::colvec cross1 = { -1, 1 };
 //     arma::colvec cross2 = { 1, -1 };
-// 
+//
 //     for(int i = 0; i < n; ++i){
 //         if(combos(i,0) == twoneg(0) & combos(i,1) == twoneg(1)) {
 //             rho_out(len) = rhobind(i);
@@ -821,7 +818,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //             break;
 //         }
 //     }
-// 
+//
 //     for(int i = 0; i < n; ++i){
 //         if((combos(i,0) == cross1(0) & combos(i,1) == cross1(1)) ||
 //                 (combos(i,0) == cross2(0) & combos(i,1) == cross2(1))){
@@ -830,7 +827,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //             break;
 //         }
 //     }
-// 
+//
 //     for(int i = 0; i < n; ++i){
 //         if(combos(i,0) == twopos(0) & combos(i,1) == twopos(1)){
 //             rho_out(len) = rhobind(i);
@@ -840,7 +837,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     }
 //     return rho_out.head(len);
 // }
-// 
+//
 // // objective function to be optimized
 // // [[Rcpp::export]]
 // double func_to_optim0(const arma::colvec& init_val,
@@ -852,7 +849,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     arma::colvec mu(a);
 //     arma::colvec sigma(b);
 //     arma::colvec rho(c);
-// 
+//
 //     mu.insert_rows(0, exp(init_val.subvec(0,a-1)));
 //     mu.elem(negidx) = -mu.elem(negidx);
 //     sigma.insert_rows(0, exp(init_val.subvec(a,a+b-1)));
@@ -860,17 +857,17 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     for(int i = 0; i < c; ++i){
 //         rho(i) = trans_rho_inv(rho(i));
 //     }
-// 
+//
 //     int n = x.n_rows;
 //     int d = x.n_cols;
 //     int k = h_est.n_cols;
 //     double nll;
-// 
+//
 //     // get appropriate mean vector and covariance matrix to pass to cdmvnorm
 //     arma::mat tmp_sigma(d, d, arma::fill::zeros);
 //     arma::rowvec tmp_mu(d, arma::fill::zeros);
 //     arma::mat pdf_est(n, k, arma::fill::none);
-// 
+//
 //     for(int i = 0; i < k; ++i) {
 //         for(int j = 0; j < d; ++j){
 //             if(combos(i,j) == -1){
@@ -883,7 +880,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //                 tmp_sigma(j,j) = sigma(b-1);
 //             }
 //         }
-// 
+//
 //         if(combos(i,0) == -1 & combos(i,1) == -1) {
 //             tmp_sigma(0,1) = rho(0);
 //             tmp_sigma(1,0) = rho(0);
@@ -908,7 +905,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     nll = -accu(h_est % log(pdf_est));
 //     return nll;
 // }
-// 
+//
 // // optimize objective function using 'optim' is R-package 'stats'
 // // [[Rcpp::export]]
 // arma::vec optim0_rcpp(const arma::vec& init_val,
@@ -917,10 +914,10 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //                      arma::mat& combos,
 //                      int& a, int& b, int& c,
 //                      arma::uvec& negidx){
-// 
+//
 //     Rcpp::Environment stats("package:stats");
 //     Rcpp::Function optim = stats["optim"];
-// 
+//
 //     Rcpp::List opt = optim(Rcpp::_["par"] = init_val,
 //                            Rcpp::_["fn"] = Rcpp::InternalFunction(&func_to_optim0),
 //                            Rcpp::_["method"] = "Nelder-Mead",
@@ -932,10 +929,10 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //                            Rcpp::_["c"] = c,
 //                            Rcpp::_["negidx"] = negidx);
 //     arma::vec mles = Rcpp::as<arma::vec>(opt["par"]);
-// 
+//
 //     return mles;
 // }
-// 
+//
 // // estimation and model selection of constrained penalized GMM
 // // [[Rcpp::export]]
 // Rcpp::List cfconstr0_pGMM(arma::mat& x,
@@ -948,7 +945,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //                          int lambda,
 //                          int citermax,
 //                          double tol) {
-// 
+//
 //     const int n = x.n_rows;
 //     const int d = x.n_cols;
 //     double delta = 1;
@@ -965,22 +962,22 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //     arma::rowvec tmp_mu(d, arma::fill::none);
 //     arma::rowvec prop_new;
 //     double thresh = 1E-03;
-// 
+//
 //     for(int step = 0; step < citermax; ++step) {
 //         // E step
 //         for(int i = 0; i < k; ++i) {
 //             tmp_mu = mu_old.row(i);
 //             tmp_Sigma = Sigma_old.slice(i);
-// 
+//
 //             pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_Sigma);
 //             prob0.col(i) = pdf_est.col(i) * prop_old(i);
 //         }
-// 
+//
 //         h_est.set_size(n, k);
 //         for(int i = 0; i < n; ++i) {
 //             h_est.row(i) = prob0.row(i)/(sum(prob0.row(i)) * 1.0L);
 //         }
-// 
+//
 //         // M step
 //         // update mean and variance covariance with numerical optimization
 //         arma::colvec sgn_mu_in = get_mu_optim(mu_old, combos);
@@ -990,20 +987,20 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //         int a = sgn_mu_in.n_rows;
 //         int b = sigma_in.n_rows;
 //         int c = rho_in.n_rows;
-// 
+//
 //         for(int i = 0; i < c; ++i){
 //             rho_in(i) = trans_rho(rho_in(i));
 //         }
-// 
+//
 //         init_val.set_size(a+b+c);
 //         init_val.subvec(0,a-1) = log(abs(sgn_mu_in));
 //         init_val.subvec(a,a+b-1) = log(sigma_in);
 //         init_val.subvec(a+b, a+b+c-1) = rho_in;
-// 
+//
 //         // Optimize using optim
 //         param_new.copy_size(init_val);
 //         param_new = optim0_rcpp(init_val, x, h_est, combos, a, b, c, negidx);
-// 
+//
 //         // Transform parameters back
 //         param_new.subvec(0,a-1) = exp(param_new.subvec(0,a-1));
 //         param_new.elem(negidx) = -param_new.elem(negidx);
@@ -1011,7 +1008,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //         for(int i = 0; i < c; ++i){
 //             param_new(a+b+i) = trans_rho_inv(param_new(a+b+i));
 //         }
-// 
+//
 //         // Make Sigma cube, mu matrix again
 //         for(int i = 0; i < k; ++i) {
 //             for(int j = 0; j < d; ++j){
@@ -1046,7 +1043,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //                 }
 //             }
 //         }
-// 
+//
 //         // update proportion
 //         prop_new.set_size(k);
 //         for(int i = 0; i < k; ++i){
@@ -1055,10 +1052,10 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //                 prop_new(i) = 0;
 //         }
 //         prop_new = prop_new/(sum(prop_new) * 1.0L);
-// 
+//
 //         // calculate difference between two iterations
 //         delta = sum(abs(prop_new - prop_old));
-// 
+//
 //         // eliminate small clusters
 //         if(sum(prop_new == 0) > 0) {
 //             arma::uvec idx = find(prop_new > 0);
@@ -1066,10 +1063,10 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //             prop_old = trans(prop_new.elem(idx));
 //             combos = combos.rows(idx);
 //             df = trans(df.elem(idx));
-// 
+//
 //             mu_old = mu_old.rows(idx);
 //             Sigma_old = choose_slice(Sigma_old, idx, d, k);
-// 
+//
 //             pdf_est = pdf_est.cols(idx);
 //             prob0 = prob0.cols(idx);
 //             h_est = h_est.cols(idx);
@@ -1078,16 +1075,16 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //         else{
 //             prop_old = prop_new;
 //         }
-// 
+//
 //         //calculate cluster with maximum posterior probability
 //         tag = index_max(h_est, 1);
-// 
+//
 //     if(delta < tol)
 //         break;
 //     if(k <= 1)
 //         break;
 // }
-// 
+//
 //     // update the likelihood for output
 //     for(int i = 0; i < k; ++i) {
 //         arma::rowvec tmp_mu = mu_old.row(i);
@@ -1095,7 +1092,7 @@ Rcpp::List cfconstr_pgmm(arma::mat& x,
 //         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_Sigma);
 //         prob0.col(i) = pdf_est.col(i) * prop_old(i);
 //     }
-// 
+//
 //     return Rcpp::List::create(Rcpp::Named("k") = k,
 //                               Rcpp::Named("prop") = prop_old,
 //                               Rcpp::Named("mu") = mu_old,
@@ -1182,7 +1179,7 @@ double cll_gmm(arma::mat& z,
 //     double tmp_sigma;
 //     double tmp_mu;
 //     arma::mat tmp_Sigma(d,d,arma::fill::none);
-// 
+//
 //     for(int i = 0; i < d; ++i){
 //         for(int j = 0; j < k; ++j) {
 //             tmp_mu = mu(j,i);
@@ -1194,7 +1191,7 @@ double cll_gmm(arma::mat& z,
 //     }
 //     return accu(mll);
 // }
-// 
+//
 // // computing joint likelihood of LESS xconstrained (0) gmm (for copula likelihood)
 // // [[Rcpp::export]]
 // double cll0_gmm(arma::mat& z,
@@ -1207,7 +1204,7 @@ double cll_gmm(arma::mat& z,
 //     arma::rowvec tmp_mu(d, arma::fill::none);
 //     arma::mat tmp_sigma(d, d, arma::fill::none);
 //     arma::mat pdf_est(n,k,arma::fill::none);
-// 
+//
 //     for(int i = 0; i < k; ++i) {
 //         tmp_mu = mu.row(i);
 //         tmp_sigma = Sigma.slice(i);
@@ -1215,5 +1212,5 @@ double cll_gmm(arma::mat& z,
 //     }
 //     return accu(log(sum(pdf_est,1)));
 // }
-// 
-// 
+//
+//
