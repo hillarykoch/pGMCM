@@ -130,7 +130,6 @@ fconstr_pGMM <-
         # lambda: a parameter of penalty term
         # d: number of replicates
         # h: number of components (currently, make only 3)
-
         if (is.null(lambda)) {
             lambda <-
                 sqrt(log(nrow(x))) * 10 ^ seq(-1 , 0.5, length.out = 20) # set the range of lambda

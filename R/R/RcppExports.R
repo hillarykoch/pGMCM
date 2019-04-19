@@ -93,10 +93,6 @@ optim_rcpp <- function(init_val, x, h_est, combos) {
     .Call(`_pGMCM_optim_rcpp`, init_val, x, h_est, combos)
 }
 
-cfconstr_pGMM <- function(x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol, LASSO) {
-    .Call(`_pGMCM_cfconstr_pGMM`, x, prop, mu, sigma, rho, combos, k, df, lambda, citermax, tol, LASSO)
-}
-
 func_to_optim_bound <- function(init_val, x, h_est, combos, bound) {
     .Call(`_pGMCM_func_to_optim_bound`, init_val, x, h_est, combos, bound)
 }
