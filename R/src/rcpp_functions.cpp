@@ -297,12 +297,14 @@ double func_to_optim(const arma::colvec& init_val,
 
     // Adjust for numerically zero values
     arma::uvec zeroidx = find(pdf_est == 0);
-    arma::uvec posidx = find(pdf_est != 0);
-    double clamper = pdf_est.elem(posidx).min();
+    if(zeroidx.size() > 0) {
+        arma::uvec posidx = find(pdf_est != 0);
+        double clamper = pdf_est.elem(posidx).min();
 
-    arma::colvec populate_vec = arma::ones(zeroidx.size());
-    populate_vec = populate_vec * clamper;
-    pdf_est.elem(zeroidx) = populate_vec;
+        arma::colvec populate_vec = arma::ones(zeroidx.size());
+        populate_vec = populate_vec * clamper;
+        pdf_est.elem(zeroidx) = populate_vec;
+    }
 
     nll = -accu(h_est % log(pdf_est));
 
@@ -519,6 +521,14 @@ double func_to_optim_bound(const arma::colvec& init_val,
     int k = h_est.n_cols;
     double nll;
 
+    if( (abs3(rho) >= sigma)) {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    if( (abs3(mu) < bound)) {
+        return std::numeric_limits<double>::infinity();
+    }
+
     arma::mat tmp_sigma(d, d, arma::fill::none);
     arma::rowvec tmp_mu(d, arma::fill::none);
     arma::mat pdf_est(n, k, arma::fill::none);
@@ -537,22 +547,16 @@ double func_to_optim_bound(const arma::colvec& init_val,
         pdf_est.col(i) = cdmvnorm(x, tmp_mu, tmp_sigma);
     }
 
-    if( (abs3(rho) >= sigma)) {
-        return std::numeric_limits<double>::infinity();
-    }
-
-    if( (abs3(mu) < bound)) {
-        return std::numeric_limits<double>::infinity();
-    }
-
     // Adjust for numerically zero values
     arma::uvec zeroidx = find(pdf_est == 0);
-    arma::uvec posidx = find(pdf_est != 0);
-    double clamper = pdf_est.elem(posidx).min();
+    if(zeroidx.size() > 0) {
+        arma::uvec posidx = find(pdf_est != 0);
+        double clamper = pdf_est.elem(posidx).min();
 
-    arma::colvec populate_vec = arma::ones(zeroidx.size());
-    populate_vec = populate_vec * clamper;
-    pdf_est.elem(zeroidx) = populate_vec;
+        arma::colvec populate_vec = arma::ones(zeroidx.size());
+        populate_vec = populate_vec * clamper;
+        pdf_est.elem(zeroidx) = populate_vec;
+    }
 
     nll = -accu(h_est % log(pdf_est));
     return nll;
