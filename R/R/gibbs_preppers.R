@@ -4,7 +4,14 @@
 # Based on empirical concordance with various paths in red_class
 get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0) {
     mus <- map(fits, "mu")
-    labels <- map(fits, "cluster") %>% simplify2array
+    
+    if (MAP) {
+        labels <- purrr::map(fits, "cluster") %>% simplify2array    
+    } else {
+        labels <- purrr::map(fits, "post_prob") %>%
+            lapply(function(X) apply(X, 1, function(Y) base::sample(1:ncol(X), size = 1, prob = Y))) %>%
+            simplify2array
+    }
     
     prior_count <-
         cget_prior_count(red_class, mus, labels, d, n, dist_tol)
