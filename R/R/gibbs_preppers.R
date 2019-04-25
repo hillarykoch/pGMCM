@@ -2,7 +2,7 @@
 
 # Get expected value of prior probability on full mixing proportions
 # Based on empirical concordance with various paths in red_class
-get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0) {
+get_prior_prop <- function(red_class, fits, d, n, dist_tol = 0, MAP = TRUE) {
     mus <- map(fits, "mu")
     
     if (MAP) {
