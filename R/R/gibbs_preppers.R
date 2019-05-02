@@ -89,10 +89,10 @@ get_hyperparams <- function(fits, d, red_class) {
                 count <- count + 1
             }
         }
-        mu0_temp[i] <- mean(muvec)
+        mu0_temp[i] <- mean(muvec, na.rm = TRUE)
         Psi0_temp[i, i] <-
             #mean(sigmavec) # This covariance probably isnt correct
-            max(sigmavec) * 5 # This covariance probably isnt correct
+            max(sigmavec, na.rm = TRUE) * 5 # This covariance probably isnt correct
     }
     
     for (i in seq(nrow(spl))) {
