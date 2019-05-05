@@ -228,7 +228,7 @@ get_hyperparams_alt <- function(fits, d, red_class, dat, clusters) {
     mu0 <- matrix(rep(0, length(red_class)),
                   nrow = nrow(red_class),
                   ncol = ncol(red_class))
-    Psi0 <- base::array(rep(0, length(Psi0_temp) * nrow(red_class)),
+    Psi0 <- base::array(rep(0, length(Psi0_temp_pos) * nrow(red_class)),
                         dim = c(d, d, nrow(red_class)))
     
     # Update mu0 based on association patterns
