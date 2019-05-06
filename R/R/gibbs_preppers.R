@@ -174,12 +174,15 @@ get_hyperparams_alt <- function(fits, d, red_class, dat, clusters) {
                             count2 <- count2 + 1
                         }
                         if(sum(clusters[[j]] == k) > 1) {
-                            sigmavec_pos[count] <- sigmavec_pos[count] + var(dat[clusters[[j]] == k, i])
+                            if(var(dat[clusters[[j]] == k, i]) > sigmavec_pos[count]) {
+                                sigmavec_pos[count] <- var(dat[clusters[[j]] == k, i])  
+                            }
+                            # sigmavec_pos[count] <- sigmavec_pos[count] + var(dat[clusters[[j]] == k, i])
                             count3 <- count3 + 1
                         }
                     }
                     muvec_pos[count] <- muvec_pos[count] / count2
-                    sigmavec_pos[count] <- sigmavec_pos[count] / count3
+                    #sigmavec_pos[count] <- sigmavec_pos[count] / count3
                 }
                 
                 if(any(subcl == -1)) {
@@ -191,20 +194,23 @@ get_hyperparams_alt <- function(fits, d, red_class, dat, clusters) {
                             count2 <- count2 + 1
                         }
                         if(sum(clusters[[j]] == k) > 1) {
-                            sigmavec_neg[count] <- sigmavec_neg[count] + var(dat[clusters[[j]] == k, i])
+                            #sigmavec_neg[count] <- sigmavec_neg[count] + var(dat[clusters[[j]] == k, i])
+                            if(var(dat[clusters[[j]] == k, i]) > sigmavec_neg[count]) {
+                                sigmavec_neg[count] <- var(dat[clusters[[j]] == k, i])  
+                            }
                             count3 <- count3 + 1
                         }
                     }
                     muvec_neg[count] <- muvec_neg[count] / count2
-                    sigmavec_neg[count] <- sigmavec_neg[count] / count3
+                    #sigmavec_neg[count] <- sigmavec_neg[count] / count3
                 }
                 count <- count + 1
             }
         }
         mu0_temp_pos[i] <- mean(muvec_pos[muvec_pos != 0])
         mu0_temp_neg[i] <- mean(muvec_neg[muvec_neg != 0]) # will be NaN if subset has length 0
-        Psi0_temp_pos[i,i] <- mean(sigmavec_pos[sigmavec_pos != 0])
-        Psi0_temp_neg[i,i] <- mean(sigmavec_neg[sigmavec_neg != 0]) # may need max, not mean
+        Psi0_temp_pos[i,i] <- quantile(sigmavec_pos[sigmavec_pos != 0], 0.75)#mean(sigmavec_pos[sigmavec_pos != 0])
+        Psi0_temp_neg[i,i] <- quantile(sigmavec_neg[sigmavec_neg != 0], 0.75) #mean(sigmavec_neg[sigmavec_neg != 0]) # may need max, not mean
     }
     
     for (i in seq(nrow(spl))) {
