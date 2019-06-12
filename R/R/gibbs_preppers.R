@@ -140,7 +140,7 @@ get_hyperparams <- function(fits, d, red_class) {
 }
 
 # Using cluster labels to determine the means, covariances
-get_hyperparams_alt <- function(fits, d, red_class, dat, clusters) {
+get_hyperparams_alt <- function(fits, d, red_class, dat, clusters, var_quantile = 0.75) {
     mu0_temp_pos <- mu0_temp_neg <- rep(NA, d)
     Psi0_temp_pos <- Psi0_temp_neg <- matrix(rep(NA, d ^ 2), nrow = d, ncol = d)
     spl <- names(fits) %>%
@@ -209,8 +209,8 @@ get_hyperparams_alt <- function(fits, d, red_class, dat, clusters) {
         }
         mu0_temp_pos[i] <- mean(muvec_pos[muvec_pos != 0])
         mu0_temp_neg[i] <- mean(muvec_neg[muvec_neg != 0]) # will be NaN if subset has length 0
-        Psi0_temp_pos[i,i] <- quantile(sigmavec_pos[sigmavec_pos != 0], 0.75)#mean(sigmavec_pos[sigmavec_pos != 0])
-        Psi0_temp_neg[i,i] <- quantile(sigmavec_neg[sigmavec_neg != 0], 0.75) #mean(sigmavec_neg[sigmavec_neg != 0]) # may need max, not mean
+        Psi0_temp_pos[i,i] <- quantile(sigmavec_pos[sigmavec_pos != 0], var_quantile)
+        Psi0_temp_neg[i,i] <- quantile(sigmavec_neg[sigmavec_neg != 0], var_quantile)
     }
     
     for (i in seq(nrow(spl))) {
