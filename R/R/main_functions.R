@@ -10,17 +10,18 @@ rGMCM <- function(n, prop, mu, sigma) {
     prop <- prop / sum(prop)
     k <- length(prop)
     d <- ifelse(length(prop) == 1, nrow(sigma), nrow(sigma[[1]]))
-
-    num <-
-        sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
+    rles <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
         sort %>%
-        rle %$%
-        lengths
+        rle
+    num <- rep(0, k)
+    num[rles$values] <- rles$lengths
 
     tag <- rep(1:k, times = num)
     y <- lapply(seq_along(prop),
                 function(X)
-                    rmvnorm(num[X], mean = mu[[X]], sigma = sigma[[X]])) %>%
+                    if(num[X] > 0) {
+                        rmvnorm(num[X], mean = mu[[X]], sigma = sigma[[X]])    
+                    }) %>%
         abind(along = 1) %>%
         data.frame %>%
         setNames(sapply(seq(d), function(X)
@@ -87,23 +88,24 @@ rconstr_GMCM <- function(n, prop, mu, sigma, rho, d, combos = NULL) {
         k <- sum(keepidx)
     }
 
-    num <-
-        sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
+    rles <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
         sort %>%
-        rle %$%
-        lengths
+        rle
+    num <- rep(0, k)
+    num[rles$values] <- rles$lengths
     tag <- rep.int(1:k, times = num)
 
     y <- lapply(seq_along(prop),
                 function(X)
-                    rmvnorm(
-                        num[X],
-                        mean = mu[combos[X, ] + 2],
-                        sigma = get_constr_sigma(diag(sigma[combos[X, ] +
-                                                                2]),
-                                                 rho,
-                                                 combos[X, ])
-                    )) %>%
+                    if(num[X] > 0) {
+                        rmvnorm(
+                            num[X],
+                            mean = mu[combos[X, ] + 2],
+                            sigma = get_constr_sigma(diag(sigma[combos[X, ] +
+                                                                    2]),
+                                                     rho,
+                                                     combos[X, ])
+                    )}) %>%
         abind(along = 1) %>%
         data.frame %>%
         setNames(sapply(seq(d), function(X)
@@ -205,23 +207,24 @@ rconstr0_GMCM <-
             k <- sum(keepidx)
         }
 
-        num <-
-            sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
+        rles <- sample(seq_along(prop), n, replace = TRUE, prob = prop) %>%
             sort %>%
-            rle %$%
-            lengths
+            rle
+        num <- rep(0, k)
+        num[rles$values] <- rles$lengths
         tag <- rep.int(1:k, times = num)
 
         y <- lapply(seq_along(prop),
                     function(X)
-                        rmvnorm(
-                            num[X],
-                            mean = mu_combos[X, ],
-                            sigma =
-                                get_constr0_sigma(sig_combos[X,],
-                                                  combos[X,],
-                                                  rho)
-                        )) %>%
+                        if(num[X] > 0) {
+                            rmvnorm(
+                                num[X],
+                                mean = mu_combos[X, ],
+                                sigma =
+                                    get_constr0_sigma(sig_combos[X,],
+                                                      combos[X,],
+                                                      rho)
+                            )}) %>%
             abind(along = 1) %>%
             data.frame %>%
             setNames(sapply(seq(d), function(X)
