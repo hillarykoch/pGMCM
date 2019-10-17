@@ -213,6 +213,16 @@ get_hyperparams_alt <- function(fits, d, red_class, dat, clusters, var_quantile 
         Psi0_temp_neg[i,i] <- quantile(sigmavec_neg[sigmavec_neg != 0], var_quantile)
     }
     
+    if(any(is.na(diag(Psi0_temp_pos)))) {
+        mn <- mean(diag(Psi0_temp_pos), na.rm = TRUE)
+        diag(Psi0_temp_pos)[is.na(diag(Psi0_temp_pos))] <- mn
+    }
+    
+    if(any(is.na(diag(Psi0_temp_neg)))) {
+        mn <- mean(diag(Psi0_temp_neg), na.rm = TRUE)
+        diag(Psi0_temp_neg)[is.na(diag(Psi0_temp_neg))] <- mn
+    }
+    
     for (i in seq(nrow(spl))) {
         subcl <- combos[[i]]
         posassocidx <- apply(subcl, 1, function(X) all(X == 1) | all(X == -1))

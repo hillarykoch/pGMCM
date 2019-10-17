@@ -173,7 +173,7 @@ fconstr_pGMM <-
         rho0 <- c(init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] > 0),
                   init$sigma[1, 2, ] %>% `[` (init$sigma[1, 2, ] < 0) %>% abs) %>%
             mean %>%
-            max(.1) %>%
+            max(c(sigma0, .1)) %>%
             matrix
 
         if (sum(prop0 == 0) > 0) {
